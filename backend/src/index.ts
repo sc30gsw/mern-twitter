@@ -8,11 +8,14 @@ const url = process.env.MONGODB_URL as string;
 
 app.use(express.json());
 
+// エンドポイント
+app.use("/api", require("./routes/auth"));
+
 // DB接続
 try {
 	mongoose.set("strictQuery", true);
 	mongoose.connect(url);
-	console.log("DB接続完了");
+	console.log("DB接続中");
 } catch (err) {
 	console.log(err);
 }
