@@ -1,7 +1,8 @@
 import express, { NextFunction } from "express";
 import { validationResult } from "express-validator";
-import { register } from "../services/userService";
+import { login, register } from "../services/userService";
 import {
+	printErrors,
 	validConfirmPasswordLength,
 	validEmailExist,
 	validEmailFormat,
@@ -9,13 +10,14 @@ import {
 	validPasswordMatches,
 	validUsernameExist,
 	validUsernameLength,
+	validUsernameOrEmail,
 } from "../services/validation/userValid";
 
 const router = express.Router();
 
 const User = require("../models/User");
 
-// ユーザー新規登録APIを呼び出し
+// ユーザー新規登録APIを呼出
 router.post(
 	"/register",
 	validUsernameLength,
@@ -25,17 +27,20 @@ router.post(
 	validUsernameExist,
 	validEmailExist,
 	validPasswordMatches,
-	(req: express.Request, res: express.Response, next: NextFunction) => {
-		const errors = validationResult(req);
-		// エラーが存在する場合
-		if (!errors.isEmpty()) {
-			return res.status(400).json({ errors: errors.array() });
-		}
-		// エラーが存在しない場合
-		next();
-	},
+	printErrors,
 	(req: express.Request, res: express.Response) => {
 		register(req, res);
+	}
+);
+
+// ユーザーログインAPI呼出
+router.post(
+	"/login",
+	validUsernameOrEmail,
+	validPasswordLength,
+	printErrors,
+	(req: express.Request, res: express.Response) => {
+		login(req, res);
 	}
 );
 
