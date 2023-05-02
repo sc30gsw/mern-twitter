@@ -1,6 +1,6 @@
 import express, { NextFunction } from "express";
 import { validationResult } from "express-validator";
-import { login, register } from "../services/userService";
+import { login, register, resetPasswordRequest } from "../services/userService";
 import {
 	printErrors,
 	validConfirmPasswordLength,
@@ -14,6 +14,7 @@ import {
 } from "../services/validation/userValid";
 import { verify } from "crypto";
 import verifyToken from "../middleware/tokenHandler";
+import { sendPasswordResetEmail } from "../middleware/mailHandler";
 
 const router = express.Router();
 
@@ -54,5 +55,16 @@ router.post(
 		return res.status(200).json({ user: req.user });
 	}
 );
+
+// パスワードリセットリクエストAPIの呼出
+router.post(
+	"/reset-password-request",
+	async (req: express.Request, res: express.Response) => {
+		resetPasswordRequest(req, res);
+	}
+);
+
+// パスワードリセットAPIの呼出
+router.post("/reset-password/:token", async (req, res) => {});
 
 module.exports = router;
