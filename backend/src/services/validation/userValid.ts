@@ -1,4 +1,10 @@
-import { body, ValidationChain } from "express-validator";
+import express, { NextFunction } from "express";
+import {
+	body,
+	oneOf,
+	ValidationChain,
+	validationResult,
+} from "express-validator";
 import mongoose from "mongoose";
 
 const User = require("../../models/User");
@@ -48,3 +54,35 @@ export const validPasswordMatches = body("confirmPassword").custom(
 		return true;
 	}
 );
+
+export const validUsernameOrEmail = oneOf([
+	[
+		body("username")
+			.exists()
+			.withMessage("ユーザー名またはメールアドレスを入力してください")
+			.isLength({ min: 8 })
+			.withMessage("ユーザー名は8文字以上で入力してください"),
+	],
+	[
+		body("email")
+			.exists()
+			.withMessage("ユーザー名またはメールアドレスを入力してください")
+			.isEmail()
+			.withMessage("有効なメールアドレスを入力してください")
+			.normalizeEmail(),
+	],
+]);
+
+export const printErrors = (
+	req: express.Request,
+	res: express.Response,
+	next: NextFunction
+) => {
+	const errors = validationResult(req);
+	// エラーが存在する場合
+	if (!errors.isEmpty()) {
+		return res.status(400).json({ errors: errors.array() });
+	}
+	// エラーが存在しない場合
+	next();
+};
