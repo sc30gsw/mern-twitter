@@ -12,6 +12,8 @@ import {
 	validUsernameLength,
 	validUsernameOrEmail,
 } from "../services/validation/userValid";
+import { verify } from "crypto";
+import verifyToken from "../middleware/tokenHandler";
 
 const router = express.Router();
 
@@ -41,6 +43,15 @@ router.post(
 	printErrors,
 	(req: express.Request, res: express.Response) => {
 		login(req, res);
+	}
+);
+
+// トークン検証APIの呼出
+router.post(
+	"/verify-token",
+	verifyToken,
+	(req: express.Request, res: express.Response) => {
+		return res.status(200).json({ user: req.user });
 	}
 );
 
