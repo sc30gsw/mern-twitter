@@ -1,5 +1,4 @@
-import express, { NextFunction } from "express";
-import { validationResult } from "express-validator";
+import express from "express";
 import { login, register, resetPasswordRequest } from "../services/userService";
 import {
 	printErrors,
@@ -12,9 +11,7 @@ import {
 	validUsernameLength,
 	validUsernameOrEmail,
 } from "../services/validation/userValid";
-import { verify } from "crypto";
 import verifyToken from "../middleware/tokenHandler";
-import { sendPasswordResetEmail } from "../middleware/mailHandler";
 
 const router = express.Router();
 
