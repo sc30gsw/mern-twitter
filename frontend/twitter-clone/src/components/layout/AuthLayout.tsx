@@ -1,9 +1,25 @@
 import { Twitter } from "@mui/icons-material";
 import { Box, Container, Typography } from "@mui/material";
-import React from "react";
-import { Outlet } from "react-router-dom";
+import { useEffect } from "react";
+import { Outlet, useNavigate } from "react-router-dom";
+import authUtils from "../../utils/authUtils";
 
 const AuthLayout = () => {
+	const navigate = useNavigate();
+
+	// ページ遷移ごとに発火
+	useEffect(() => {
+		// JWTを持っているかチェック
+		const checkAuth = async () => {
+			// 認証チェック
+			const isAuth = await authUtils.isAuthenticated();
+			if (isAuth) {
+				navigate("/");
+			}
+		};
+		checkAuth();
+	}, [navigate]);
+
 	return (
 		<Box>
 			<Container component="main" maxWidth="xs">
