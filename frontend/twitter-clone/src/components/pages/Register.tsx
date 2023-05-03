@@ -1,12 +1,110 @@
 import { LoadingButton } from "@mui/lab";
 import { Box, Button, TextField, Typography } from "@mui/material";
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import authApi from "../../api/authApi";
 
 const Register = () => {
+	const navigate = useNavigate();
 	const [loading, setLoading] = useState<boolean>(false);
+	const [usernameErrMsg, setUsernameErrMsg] = useState<string>("");
+	const [emailErrMsg, setEmailErrMsg] = useState<string>("");
+	const [passwordErrMsg, setPasswordErrMsg] = useState<string>("");
+	const [confirmPasswordErrMsg, setConfirmPasswordErrMsg] =
+		useState<string>("");
+
+	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		setLoading(true);
+
+		setUsernameErrMsg("");
+		setEmailErrMsg("");
+		setPasswordErrMsg("");
+		setConfirmPasswordErrMsg("");
+
+		// 入力欄の値を取得
+		const data = new FormData(e.target as HTMLFormElement);
+		const username = data.get("username")?.toString().trim() as string;
+		const email = data.get("email")?.toString().trim() as string;
+		const password = data.get("password")?.toString().trim() as string;
+		const confirmPassword = data
+			.get("confirmPassword")
+			?.toString()
+			.trim() as string;
+
+		// バリデーション
+		let err = false;
+		if (!username) {
+			err = true;
+			setUsernameErrMsg("名前を入力してください");
+		}
+
+		if (!email) {
+			err = true;
+			setEmailErrMsg("メールアドレスを入力してください");
+		}
+
+		if (!password) {
+			err = true;
+			setPasswordErrMsg("パスワードを入力してください");
+		}
+
+		if (!confirmPassword) {
+			err = true;
+			setConfirmPasswordErrMsg("パスワード(確認用)を入力してください");
+		}
+
+		if (password !== confirmPassword) {
+			err = true;
+			setConfirmPasswordErrMsg("パスワードとパスワード(確認用)が一致しません");
+		}
+
+		if (err) return setLoading(false);
+
+		// 新規登録API呼出
+		try {
+			const res = await authApi.register({
+				username,
+				email,
+				password,
+				confirmPassword,
+			});
+
+			localStorage.setItem("token", res.data.token);
+			setLoading(false);
+
+			console.log("新規登録に成功しました");
+			navigate("/");
+		} catch (err: any) {
+			const errors = err.data.errors;
+			console.log(errors);
+			console.log(err.param);
+
+			errors.map((err: any) => {
+				switch (err.path) {
+					case "username":
+						setUsernameErrMsg(err.msg);
+						break;
+
+					case "email":
+						setEmailErrMsg(err.msg);
+						break;
+
+					case "password":
+						setPasswordErrMsg(err.msg);
+						break;
+
+					case "confirmPassword":
+						setConfirmPasswordErrMsg(err.msg);
+						break;
+				}
+			});
+
+			setLoading(false);
+		}
+	};
 	return (
-		<Box component="form" noValidate>
+		<Box component="form" onSubmit={handleSubmit} noValidate>
 			<TextField
 				fullWidth
 				id="username"
@@ -14,6 +112,9 @@ const Register = () => {
 				label="名前"
 				margin="normal"
 				required
+				helperText={usernameErrMsg}
+				error={usernameErrMsg !== ""}
+				disabled={loading}
 			/>
 			<TextField
 				fullWidth
@@ -23,6 +124,9 @@ const Register = () => {
 				label="Email"
 				margin="normal"
 				required
+				helperText={emailErrMsg}
+				error={emailErrMsg !== ""}
+				disabled={loading}
 			/>
 			<TextField
 				fullWidth
@@ -32,6 +136,9 @@ const Register = () => {
 				label="パスワード"
 				margin="normal"
 				required
+				helperText={passwordErrMsg}
+				error={passwordErrMsg !== ""}
+				disabled={loading}
 			/>
 			<TextField
 				fullWidth
@@ -41,6 +148,9 @@ const Register = () => {
 				label="確認用パスワード"
 				margin="normal"
 				required
+				helperText={confirmPasswordErrMsg}
+				error={confirmPasswordErrMsg !== ""}
+				disabled={loading}
 			/>
 			<LoadingButton
 				type="submit"
