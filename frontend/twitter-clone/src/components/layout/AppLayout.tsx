@@ -3,8 +3,28 @@ import Home from "../pages/Home";
 import { Box } from "@mui/material";
 import Widgets from "../pages/Widgets";
 import AccountButtonArea from "../pages/AccountButtonArea";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import authUtils from "../../utils/authUtils";
 
 const AppLayout = () => {
+	const navigate = useNavigate();
+
+	// ページ遷移ごとに発火
+	useEffect(() => {
+		// JWTを持っているかチェック
+		const checkAuth = async () => {
+			// 認証チェック
+			const isAuth = await authUtils.isAuthenticated();
+			if (isAuth) {
+				navigate("/");
+			} else {
+				navigate("/auth");
+			}
+		};
+		checkAuth();
+	}, [navigate]);
+
 	const user = false;
 	return (
 		<Box
@@ -39,7 +59,7 @@ const AppLayout = () => {
 					height: "100vh",
 				}}
 			>
-				{user ? <Widgets /> : <AccountButtonArea />}
+				<Widgets />
 			</Box>
 		</Box>
 	);
