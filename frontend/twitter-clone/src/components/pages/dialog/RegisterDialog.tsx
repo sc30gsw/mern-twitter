@@ -10,8 +10,9 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import authApi from "../../../api/authApi";
+import { useUserContext } from "../../../contexts/UserProvider";
 
 type RegisterDialogProps = {
 	open: boolean;
@@ -20,6 +21,9 @@ type RegisterDialogProps = {
 };
 
 const RegisterDialog = ({ open, loginOpen, onClose }: RegisterDialogProps) => {
+	const navigate = useNavigate();
+	const { setUser } = useUserContext();
+
 	const [loading, setLoading] = useState<boolean>(false);
 	const [usernameErrMsg, setUsernameErrMsg] = useState<string>("");
 	const [emailErrMsg, setEmailErrMsg] = useState<string>("");
@@ -100,10 +104,21 @@ const RegisterDialog = ({ open, loginOpen, onClose }: RegisterDialogProps) => {
 			});
 
 			localStorage.setItem("token", res.data.token);
+
+			const user = res.data.user;
+			setUser({
+				id: user._id,
+				username: user.username,
+				email: user.email,
+				icon: user.icon,
+				version: user.__v,
+			});
+
 			setLoading(false);
 
 			console.log("新規登録に成功しました");
 			onClose();
+			navigate("/");
 		} catch (err: any) {
 			const errors = err.data.errors;
 			console.log(errors);
@@ -111,6 +126,7 @@ const RegisterDialog = ({ open, loginOpen, onClose }: RegisterDialogProps) => {
 			setLoading(false);
 		}
 	};
+
 	return (
 		<Dialog
 			open={open}

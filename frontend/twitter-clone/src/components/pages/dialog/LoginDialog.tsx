@@ -12,6 +12,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import authApi from "../../../api/authApi";
+import { useUserContext } from "../../../contexts/UserProvider";
 
 type LoginDialogProps = {
 	open: boolean;
@@ -21,6 +22,9 @@ type LoginDialogProps = {
 
 const LoginDialog = ({ open, registerOpen, onClose }: LoginDialogProps) => {
 	const navigate = useNavigate();
+
+	const { setUser } = useUserContext();
+
 	const [loading, setLoading] = useState<boolean>(false);
 	const [usernameOrEmailErrMsg, setUsernameOrEmailErrMsg] =
 		useState<string>("");
@@ -81,6 +85,16 @@ const LoginDialog = ({ open, registerOpen, onClose }: LoginDialogProps) => {
 			});
 
 			localStorage.setItem("token", res.data.token);
+
+			const user = res.data.user;
+			setUser({
+				id: user._id,
+				username: user.username,
+				email: user.email,
+				icon: user.icon,
+				version: user.__v,
+			});
+
 			setLoading(false);
 
 			console.log("ログインに成功しました");
@@ -93,6 +107,7 @@ const LoginDialog = ({ open, registerOpen, onClose }: LoginDialogProps) => {
 			setLoading(false);
 		}
 	};
+
 	return (
 		<Dialog
 			open={open}
