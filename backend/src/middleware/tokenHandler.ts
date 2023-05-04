@@ -27,7 +27,6 @@ export const tokenDecode = (req: express.Request) => {
 				bearer,
 				process.env.TOKEN_SECRET_KEY as string
 			);
-			console.log(decodedToken);
 
 			return decodedToken;
 		} catch (err) {
