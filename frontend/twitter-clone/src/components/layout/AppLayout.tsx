@@ -2,7 +2,6 @@ import Sidebar from "../pages/Sidebar";
 import Home from "../pages/Home";
 import { Box } from "@mui/material";
 import Widgets from "../pages/Widgets";
-import AccountButtonArea from "../pages/AccountButtonArea";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import authUtils from "../../utils/authUtils";
