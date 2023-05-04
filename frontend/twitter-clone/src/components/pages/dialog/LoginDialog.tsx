@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import authApi from "../../../api/authApi";
 
 type LoginDialogProps = {
@@ -20,7 +20,79 @@ type LoginDialogProps = {
 };
 
 const LoginDialog = ({ open, registerOpen, onClose }: LoginDialogProps) => {
+	const navigate = useNavigate();
 	const [loading, setLoading] = useState<boolean>(false);
+	const [usernameOrEmailErrMsg, setUsernameOrEmailErrMsg] =
+		useState<string>("");
+	const [passwordErrMsg, setPasswordErrMsg] = useState<string>("");
+
+	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		setLoading(true);
+
+		setUsernameOrEmailErrMsg("");
+		setPasswordErrMsg("");
+
+		// 入力欄の値を取得
+		const data = new FormData(e.target as HTMLFormElement);
+		const usernameOrEmail = data
+			.get("usernameOrEmail")
+			?.toString()
+			.trim() as string;
+		const password = data.get("password")?.toString().trim() as string;
+
+		// バリデーション
+		let err = false;
+		let username;
+		let email;
+		const emailFormat = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/i;
+		if (!usernameOrEmail) {
+			setUsernameOrEmailErrMsg("名前またはメールアドレスを入力してください");
+			err = true;
+		} else if (emailFormat.test(usernameOrEmail)) {
+			email = usernameOrEmail;
+			username = "";
+		} else {
+			username = usernameOrEmail;
+			email = "";
+		}
+
+		if (email && !emailFormat.test(email)) {
+			setUsernameOrEmailErrMsg("有効なメールアドレスを入力してください");
+			err = true;
+		}
+
+		if (!password) {
+			err = true;
+			setPasswordErrMsg("パスワードを入力してください");
+		} else if (password.length < 8) {
+			err = true;
+			setPasswordErrMsg("パスワードは8文字以上で入力してください");
+		}
+
+		if (err) return setLoading(false);
+
+		// ログインAPI呼出
+		try {
+			const res = await authApi.login({
+				username,
+				email,
+				password,
+			});
+
+			localStorage.setItem("token", res.data.token);
+			setLoading(false);
+
+			console.log("ログインに成功しました");
+			onClose();
+			navigate("/");
+		} catch (err: any) {
+			const errors = err.data.errors;
+			console.log(errors);
+
+			setLoading(false);
+		}
+	};
 	return (
 		<Dialog
 			open={open}
@@ -44,7 +116,7 @@ const LoginDialog = ({ open, registerOpen, onClose }: LoginDialogProps) => {
 			</IconButton>
 			<DialogContent>
 				<Typography variant="h4">アカウントを作成</Typography>
-				<Box component="form" noValidate>
+				<Box component="form" noValidate onSubmit={handleSubmit}>
 					<TextField
 						fullWidth
 						id="usernameOrEmail"
@@ -53,6 +125,8 @@ const LoginDialog = ({ open, registerOpen, onClose }: LoginDialogProps) => {
 						placeholder="名前またはメールアドレスを入力してください"
 						margin="normal"
 						required
+						error={usernameOrEmailErrMsg !== ""}
+						helperText={usernameOrEmailErrMsg}
 					/>
 					<TextField
 						fullWidth
@@ -62,6 +136,8 @@ const LoginDialog = ({ open, registerOpen, onClose }: LoginDialogProps) => {
 						label="パスワード"
 						margin="normal"
 						required
+						error={passwordErrMsg !== ""}
+						helperText={passwordErrMsg}
 					/>
 					<LoadingButton
 						type="submit"
