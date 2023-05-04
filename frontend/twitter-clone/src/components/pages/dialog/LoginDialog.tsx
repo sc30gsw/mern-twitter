@@ -162,7 +162,7 @@ const LoginDialog = ({ open, registerOpen, onClose }: LoginDialogProps) => {
 						アカウントをお持ちでない場合は
 						<Button
 							component={Link}
-							to="/"
+							to="/auth"
 							sx={{
 								fontSize: "1rem",
 								padding: 0,

@@ -205,7 +205,7 @@ const RegisterDialog = ({ open, loginOpen, onClose }: RegisterDialogProps) => {
 						アカウントをお持ちの場合は
 						<Button
 							component={Link}
-							to="/"
+							to="/auth"
 							sx={{
 								fontSize: "1rem",
 								padding: 0,
