@@ -1,6 +1,7 @@
 import Sidebar from "../pages/Sidebar";
 import Home from "../pages/Home";
-import { Box } from "@mui/material";
+import { Alert, Box, Collapse, IconButton } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import Widgets from "../pages/Widgets";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
@@ -26,41 +27,43 @@ const AppLayout = () => {
 
 	const user = false;
 	return (
-		<Box
-			component="main"
-			sx={{
-				display: "flex",
-				justifyContent: "center",
-				alignItems: "center",
-				width: "100vw",
-				height: "100vh",
-				px: "10%",
-			}}
-		>
+		<>
 			<Box
-				sx={{ flex: "2", borderRight: "solid 1px #d5e5f1", height: "100vh" }}
-			>
-				<Sidebar />
-			</Box>
-			<Box
+				component="main"
 				sx={{
-					flex: "6",
+					display: "flex",
+					justifyContent: "center",
+					alignItems: "center",
+					width: "100vw",
 					height: "100vh",
-					overflowY: "auto",
+					px: "10%",
 				}}
 			>
-				<Home />
+				<Box
+					sx={{ flex: "2", borderRight: "solid 1px #d5e5f1", height: "100vh" }}
+				>
+					<Sidebar />
+				</Box>
+				<Box
+					sx={{
+						flex: "6",
+						height: "100vh",
+						overflowY: "auto",
+					}}
+				>
+					<Home />
+				</Box>
+				<Box
+					sx={{
+						flex: "3.5",
+						borderLeft: "solid 1px #d5e5f1",
+						height: "100vh",
+					}}
+				>
+					<Widgets />
+				</Box>
 			</Box>
-			<Box
-				sx={{
-					flex: "3.5",
-					borderLeft: "solid 1px #d5e5f1",
-					height: "100vh",
-				}}
-			>
-				<Widgets />
-			</Box>
-		</Box>
+		</>
 	);
 };
 
