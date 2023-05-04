@@ -2,7 +2,6 @@ import {
 	Avatar,
 	Box,
 	IconButton,
-	Menu,
 	MenuItem,
 	MenuList,
 	Popover,
@@ -10,8 +9,10 @@ import {
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Sign = () => {
+	const navigate = useNavigate();
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const open = Boolean(anchorEl);
 
@@ -19,6 +20,12 @@ const Sign = () => {
 		setAnchorEl(e.currentTarget);
 
 	const handleClose = () => setAnchorEl(null);
+
+	const logout = () => {
+		setAnchorEl(null);
+		localStorage.removeItem("token");
+		navigate("/auth");
+	};
 
 	return (
 		<>
@@ -56,7 +63,7 @@ const Sign = () => {
 				}}
 			>
 				<MenuList>
-					<MenuItem onClick={handleClose}>
+					<MenuItem onClick={logout}>
 						<LogoutOutlinedIcon />
 						Log out userName
 					</MenuItem>
