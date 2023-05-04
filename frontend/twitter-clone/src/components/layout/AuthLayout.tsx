@@ -1,43 +1,44 @@
-import { Twitter } from "@mui/icons-material";
-import { Box, Container, Typography } from "@mui/material";
-import { useEffect } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
-import authUtils from "../../utils/authUtils";
+import { Box } from "@mui/material";
+import Sidebar from "../pages/Sidebar";
+import Home from "../pages/Home";
+import AccountButtonArea from "../pages/AccountButtonArea";
 
 const AuthLayout = () => {
-	const navigate = useNavigate();
-
-	// ページ遷移ごとに発火
-	useEffect(() => {
-		// JWTを持っているかチェック
-		const checkAuth = async () => {
-			// 認証チェック
-			const isAuth = await authUtils.isAuthenticated();
-			if (isAuth) {
-				navigate("/");
-			}
-		};
-		checkAuth();
-	}, [navigate]);
-
 	return (
-		<Box>
-			<Container component="main" maxWidth="xs">
-				<Box
-					sx={{
-						mt: 6,
-						display: "flex",
-						alignItems: "center",
-						flexDirection: "column",
-					}}
-				>
-					<Twitter sx={{ color: "#1DA1F2", fontSize: "100px" }} />
-					<Typography variant="h4" gutterBottom>
-						Twitterクローン
-					</Typography>
-				</Box>
-				<Outlet />
-			</Container>
+		<Box
+			component="main"
+			sx={{
+				display: "flex",
+				justifyContent: "center",
+				alignItems: "center",
+				width: "100vw",
+				height: "100vh",
+				px: "10%",
+			}}
+		>
+			<Box
+				sx={{ flex: "2", borderRight: "solid 1px #d5e5f1", height: "100vh" }}
+			>
+				<Sidebar />
+			</Box>
+			<Box
+				sx={{
+					flex: "6",
+					height: "100vh",
+					overflowY: "auto",
+				}}
+			>
+				<Home />
+			</Box>
+			<Box
+				sx={{
+					flex: "3.5",
+					borderLeft: "solid 1px #d5e5f1",
+					height: "100vh",
+				}}
+			>
+				<AccountButtonArea />
+			</Box>
 		</Box>
 	);
 };
