@@ -15,8 +15,6 @@ import verifyToken from "../middleware/tokenHandler";
 
 const router = express.Router();
 
-const User = require("../models/User");
-
 // ユーザー新規登録APIを呼出
 router.post(
 	"/register",

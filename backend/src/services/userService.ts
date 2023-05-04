@@ -4,8 +4,7 @@ import jwt from "jsonwebtoken";
 import "dotenv/config";
 import { sendPasswordResetEmail } from "../middleware/mailHandler";
 import { tokenDecode } from "../middleware/tokenHandler";
-
-const User = require("../models/User");
+import User from "../models/User";
 
 export const register = async (req: express.Request, res: express.Response) => {
 	// パスワード取得

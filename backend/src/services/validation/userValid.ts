@@ -5,9 +5,7 @@ import {
 	ValidationChain,
 	validationResult,
 } from "express-validator";
-import mongoose from "mongoose";
-
-const User = require("../../models/User");
+import User from "../../models/User";
 
 export const validUsernameLength = body("username")
 	.isLength({ min: 8 })
@@ -27,22 +25,20 @@ export const validConfirmPasswordLength = body("confirmPassword")
 	.withMessage("パスワード(確認用)は8文字以上で入力してください");
 
 export const validUsernameExist: ValidationChain = body("username").custom(
-	(value: string) => {
-		return User.findOne({ username: value }).then((user: mongoose.Schema) => {
-			if (user) {
-				return Promise.reject("このユーザーはすでに使われています");
-			}
-		});
+	async (value: string) => {
+		const user = await User.findOne({ username: value });
+		if (user) {
+			throw new Error("このユーザーはすでに使われています");
+		}
 	}
 );
 
 export const validEmailExist: ValidationChain = body("email").custom(
-	(value: string) => {
-		return User.findOne({ email: value }).then((user: mongoose.Document) => {
-			if (user) {
-				return Promise.reject("このメールアドレスはすでに使われています");
-			}
-		});
+	async (value: string) => {
+		const user = await User.findOne({ email: value });
+		if (user) {
+			throw new Error("このメールアドレスはすでに使われています");
+		}
 	}
 );
 

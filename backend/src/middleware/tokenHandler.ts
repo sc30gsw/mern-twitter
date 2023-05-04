@@ -1,7 +1,6 @@
 import express, { NextFunction } from "express";
 import jwt from "jsonwebtoken";
-
-const User = require("../models/User");
+import User from "../models/User";
 
 // express.Requestに拡張でUser型を追加
 declare global {
@@ -28,9 +27,11 @@ export const tokenDecode = (req: express.Request) => {
 				bearer,
 				process.env.TOKEN_SECRET_KEY as string
 			);
+			console.log(decodedToken);
 
 			return decodedToken;
-		} catch {
+		} catch (err) {
+			console.log(err);
 			return false;
 		}
 	} else {
@@ -58,7 +59,7 @@ const verifyToken = async (
 		}
 
 		// リクエスト情報を取得したユーザーで上書き
-		req.user = user;
+		req.user = { id: user._id.toString() };
 		next();
 	} else {
 		return res.status(401).json("権限がありません");
