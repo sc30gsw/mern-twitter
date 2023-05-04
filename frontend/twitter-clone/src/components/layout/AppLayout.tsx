@@ -1,11 +1,11 @@
-import React from "react";
 import Sidebar from "../pages/Sidebar";
 import Home from "../pages/Home";
 import { Box } from "@mui/material";
 import Widgets from "../pages/Widgets";
-import Sign from "../pages/Sign";
+import AccountButtonArea from "../pages/AccountButtonArea";
 
 const AppLayout = () => {
+	const user = false;
 	return (
 		<Box
 			component="main"
@@ -25,7 +25,7 @@ const AppLayout = () => {
 			</Box>
 			<Box
 				sx={{
-					flex: "4",
+					flex: "6",
 					height: "100vh",
 					overflowY: "auto",
 				}}
@@ -34,12 +34,12 @@ const AppLayout = () => {
 			</Box>
 			<Box
 				sx={{
-					flex: "2",
+					flex: "3.5",
 					borderLeft: "solid 1px #d5e5f1",
 					height: "100vh",
 				}}
 			>
-				<Widgets />
+				{user ? <Widgets /> : <AccountButtonArea />}
 			</Box>
 		</Box>
 	);
