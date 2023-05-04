@@ -11,6 +11,8 @@ type User = {
 type UserContextValue = {
 	user?: User;
 	setUser: (user?: User) => void;
+	logoutEvent: boolean;
+	triggerLogoutEvent: () => void;
 };
 
 const UserContext = createContext<UserContextValue | undefined>(undefined);
@@ -30,9 +32,17 @@ type UserProviderProps = {
 
 export const UserProvider = ({ children }: UserProviderProps) => {
 	const [user, setUser] = useState<User | undefined>(undefined);
+	const [logoutEvent, setLogoutEvent] = useState<boolean>(false);
+
+	const triggerLogoutEvent = () => {
+		setLogoutEvent(true);
+		setTimeout(() => setLogoutEvent(false), 3000);
+	};
 
 	return (
-		<UserContext.Provider value={{ user, setUser }}>
+		<UserContext.Provider
+			value={{ user, setUser, logoutEvent, triggerLogoutEvent }}
+		>
 			{children}
 		</UserContext.Provider>
 	);

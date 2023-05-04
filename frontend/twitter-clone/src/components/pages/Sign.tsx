@@ -10,9 +10,13 @@ import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useUserContext } from "../../contexts/UserProvider";
 
 const Sign = () => {
 	const navigate = useNavigate();
+
+	const { setUser, triggerLogoutEvent } = useUserContext();
+
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const open = Boolean(anchorEl);
 
@@ -23,7 +27,11 @@ const Sign = () => {
 
 	const logout = () => {
 		setAnchorEl(null);
+
 		localStorage.removeItem("token");
+		setUser(undefined);
+		console.log("ログアウトしました");
+		triggerLogoutEvent();
 		navigate("/auth");
 	};
 
