@@ -1,23 +1,68 @@
-import { Avatar, Box, Button, IconButton, Typography } from "@mui/material";
+import {
+	Avatar,
+	Box,
+	IconButton,
+	Menu,
+	MenuItem,
+	MenuList,
+	Popover,
+} from "@mui/material";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 
+import { useState } from "react";
+
 const Sign = () => {
+	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+	const open = Boolean(anchorEl);
+
+	const handleClick = (e: React.MouseEvent<HTMLButtonElement>) =>
+		setAnchorEl(e.currentTarget);
+
+	const handleClose = () => setAnchorEl(null);
+
 	return (
-		<IconButton sx={{ ":hover": { background: "#d6dfe8" } }}>
-			<Box
-				sx={{
-					width: "100%",
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "center",
+		<>
+			<IconButton
+				id="sign-button"
+				aria-controls={open ? "sign-menu" : undefined}
+				aria-haspopup="true"
+				aria-expanded={open ? "true" : undefined}
+				onClick={handleClick}
+				sx={{ ":hover": { background: "#d6dfe8" } }}
+			>
+				<Box
+					sx={{
+						width: "100%",
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "center",
+					}}
+				>
+					<Avatar src="" alt="K" sx={{ width: "60px", height: "60px" }} />
+				</Box>
+			</IconButton>
+			<Popover
+				id="sign-menu"
+				anchorEl={anchorEl}
+				open={open}
+				onClose={handleClose}
+				anchorOrigin={{
+					vertical: "top",
+					horizontal: "center",
+				}}
+				transformOrigin={{
+					vertical: "bottom",
+					horizontal: "center",
 				}}
 			>
-				<Avatar src="" alt="K" sx={{ width: "60px", height: "60px" }} />
-				{/* <IconButton>
-					<LogoutOutlinedIcon />
-				</IconButton> */}
-			</Box>
-		</IconButton>
+				<MenuList>
+					<MenuItem onClick={handleClose}>
+						<LogoutOutlinedIcon />
+						Log out userName
+					</MenuItem>
+				</MenuList>
+			</Popover>
+		</>
 	);
 };
 

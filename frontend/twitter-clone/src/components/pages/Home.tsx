@@ -5,7 +5,7 @@ import TweetList from "./TweetList";
 const Home = () => {
 	return (
 		<Box sx={{ height: "100vh", margin: "10px 10px 0", maxWidth: 500 }}>
-			<TweetBox />
+			<TweetBox title={"ホーム"} rows={undefined} />
 			<TweetList />
 		</Box>
 	);
