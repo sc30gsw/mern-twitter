@@ -1,6 +1,10 @@
-import express, { NextFunction } from "express";
-import { validationResult } from "express-validator";
-import { login, register, resetPasswordRequest } from "../services/userService";
+import express from "express";
+import {
+	forgotPassword,
+	login,
+	register,
+	resetPassword,
+} from "../services/userService";
 import {
 	printErrors,
 	validConfirmPasswordLength,
@@ -8,22 +12,22 @@ import {
 	validEmailFormat,
 	validPasswordLength,
 	validPasswordMatches,
+	validProfileNameLength,
 	validUsernameExist,
+	validUsernameFormat,
 	validUsernameLength,
 	validUsernameOrEmail,
 } from "../services/validation/userValid";
-import { verify } from "crypto";
 import verifyToken from "../middleware/tokenHandler";
-import { sendPasswordResetEmail } from "../middleware/mailHandler";
 
 const router = express.Router();
-
-const User = require("../models/User");
 
 // ユーザー新規登録APIを呼出
 router.post(
 	"/register",
 	validUsernameLength,
+	validUsernameFormat,
+	validProfileNameLength,
 	validEmailFormat,
 	validPasswordLength,
 	validConfirmPasswordLength,
@@ -56,15 +60,26 @@ router.post(
 	}
 );
 
-// パスワードリセットリクエストAPIの呼出
+// パスワード忘れリクエストAPIの呼出
 router.post(
-	"/reset-password-request",
-	async (req: express.Request, res: express.Response) => {
-		resetPasswordRequest(req, res);
+	"/forgotPassword",
+	validUsernameOrEmail,
+	printErrors,
+	(req: express.Request, res: express.Response) => {
+		forgotPassword(req, res);
 	}
 );
 
 // パスワードリセットAPIの呼出
-router.post("/reset-password/:token", async (req, res) => {});
+router.post(
+	"/resetPassword",
+	validPasswordLength,
+	validConfirmPasswordLength,
+	validPasswordMatches,
+	printErrors,
+	(req: express.Request, res: express.Response) => {
+		resetPassword(req, res);
+	}
+);
 
 module.exports = router;

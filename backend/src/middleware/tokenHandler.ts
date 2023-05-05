@@ -1,7 +1,6 @@
 import express, { NextFunction } from "express";
 import jwt from "jsonwebtoken";
-
-const User = require("../models/User");
+import User from "../models/User";
 
 // express.Requestに拡張でUser型を追加
 declare global {
@@ -13,7 +12,7 @@ declare global {
 }
 
 // JWTトークンを復号する処理
-export const tokenDecode = (req: express.Request) => {
+const tokenDecode = (req: express.Request) => {
 	// リクエストヘッダーの"authorization"を取得
 	const bearerHeader = req.headers.authorization;
 
@@ -30,7 +29,8 @@ export const tokenDecode = (req: express.Request) => {
 			);
 
 			return decodedToken;
-		} catch {
+		} catch (err) {
+			console.log(err);
 			return false;
 		}
 	} else {
@@ -58,7 +58,7 @@ const verifyToken = async (
 		}
 
 		// リクエスト情報を取得したユーザーで上書き
-		req.user = user;
+		req.user = { id: user._id.toString() };
 		next();
 	} else {
 		return res.status(401).json("権限がありません");

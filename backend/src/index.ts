@@ -1,15 +1,18 @@
 import express from "express";
 import mongoose from "mongoose";
 import "dotenv/config";
+const cors = require("cors");
 
 const app = express();
+
+app.use(cors({ origin: "*" }));
 const PORT = 4000;
 const url = process.env.MONGODB_URL as string;
 
 app.use(express.json());
 
 // エンドポイント
-app.use("/api", require("./routes/auth"));
+app.use("/api", require("./routes/index"));
 
 // DB接続
 try {

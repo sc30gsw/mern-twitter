@@ -15,6 +15,18 @@ const userSchema = new mongoose.Schema({
 		type: String,
 		required: true,
 	},
+	icon: {
+		type: String,
+		default: "",
+	},
+	profileName: {
+		type: String,
+		required: true,
+	},
+	description: {
+		type: String,
+		default: "",
+	},
 });
 
-module.exports = mongoose.model("User", userSchema);
+export default mongoose.model("User", userSchema);
