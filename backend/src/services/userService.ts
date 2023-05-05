@@ -95,6 +95,7 @@ export const forgotPassword = async (
 
 		return res.status(200).json({ user });
 	} catch (err) {
+		console.log(err);
 		res.status(500).json(err);
 	}
 };
