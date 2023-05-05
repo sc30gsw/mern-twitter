@@ -14,6 +14,8 @@ import AppLayout from "./components/layout/AppLayout";
 import AuthLayout from "./components/layout/AuthLayout";
 import { useEffect, useState } from "react";
 import { useUserContext } from "./contexts/UserProvider";
+import Profile from "./components/pages/Profile";
+import Home from "./components/pages/Home";
 
 const App = () => {
 	const { logoutEvent, settingPasswordEvent } = useUserContext();
@@ -101,7 +103,10 @@ const App = () => {
 			)}
 			<BrowserRouter>
 				<Routes>
-					<Route path="/" element={<AppLayout />} />
+					<Route path="/" element={<AppLayout />}>
+						<Route path="/" element={<Home />} />
+						<Route path="/:username" element={<Profile />} />
+					</Route>
 					<Route path="/auth" element={<AuthLayout />} />
 				</Routes>
 			</BrowserRouter>
