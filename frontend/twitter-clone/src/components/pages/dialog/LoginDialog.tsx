@@ -5,14 +5,19 @@ import {
 	Dialog,
 	DialogContent,
 	IconButton,
+	InputAdornment,
 	TextField,
 	Typography,
 } from "@mui/material";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import CloseIcon from "@mui/icons-material/Close";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import authApi from "../../../api/authApi";
 import { useUserContext } from "../../../contexts/UserProvider";
+import ForgotPasswordDialog from "./ForgotPasswordDialog";
+import { Twitter } from "@mui/icons-material";
 
 type LoginDialogProps = {
 	open: boolean;
@@ -26,9 +31,16 @@ const LoginDialog = ({ open, registerOpen, onClose }: LoginDialogProps) => {
 	const { setUser } = useUserContext();
 
 	const [loading, setLoading] = useState<boolean>(false);
+	const [forgotPasswordOpen, setForgotPasswordOpen] = useState<boolean>(false);
 	const [usernameOrEmailErrMsg, setUsernameOrEmailErrMsg] =
 		useState<string>("");
 	const [passwordErrMsg, setPasswordErrMsg] = useState<string>("");
+	const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
+
+	const handleForgotPasswordOpen = () => setForgotPasswordOpen(true);
+	const handleForgotPasswordClose = () => setForgotPasswordOpen(false);
+
+	const togglePasswordVisibility = () => setPasswordVisible(!passwordVisible);
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -109,72 +121,64 @@ const LoginDialog = ({ open, registerOpen, onClose }: LoginDialogProps) => {
 	};
 
 	return (
-		<Dialog
-			open={open}
-			onClose={onClose}
-			sx={{
-				"& .MuiDialog-paper": {
-					padding: "50px",
-					borderRadius: "30px",
-				},
-			}}
-		>
-			<IconButton
-				onClick={onClose}
+		<>
+			<Dialog
+				open={open}
+				onClose={onClose}
 				sx={{
-					position: "absolute",
-					top: 8,
-					right: 8,
+					"& .MuiDialog-paper": {
+						padding: "50px",
+						borderRadius: "30px",
+					},
 				}}
 			>
-				<CloseIcon />
-			</IconButton>
-			<DialogContent>
-				<Typography variant="h4">アカウントを作成</Typography>
-				<Box component="form" noValidate onSubmit={handleSubmit}>
-					<TextField
-						fullWidth
-						id="usernameOrEmail"
-						name="usernameOrEmail"
-						label="名前/Eメール"
-						placeholder="名前またはメールアドレスを入力してください"
-						margin="normal"
-						required
-						error={usernameOrEmailErrMsg !== ""}
-						helperText={usernameOrEmailErrMsg}
-					/>
-					<TextField
-						fullWidth
-						type="password"
-						id="password"
-						name="password"
-						label="パスワード"
-						margin="normal"
-						required
-						error={passwordErrMsg !== ""}
-						helperText={passwordErrMsg}
-					/>
-					<LoadingButton
-						type="submit"
-						fullWidth
-						sx={{
-							mt: 3,
-							mb: 2,
-							padding: "15px",
-							borderRadius: "10px",
-							bgcolor: "#14171A",
-							color: "#F5F8FA",
-							fontSize: "1rem",
-							":hover": { background: "#14171A", opacity: 0.7 },
-						}}
-						color="primary"
-						variant="contained"
-						loading={loading}
-					>
-						ログイン
-					</LoadingButton>
-					<Typography>
-						アカウントをお持ちでない場合は
+				<IconButton
+					onClick={onClose}
+					sx={{
+						position: "absolute",
+						top: 8,
+						right: 8,
+					}}
+				>
+					<CloseIcon />
+				</IconButton>
+				<DialogContent>
+					<Box sx={{ textAlign: "center" }}>
+						<Twitter sx={{ color: "#1DA1F2", fontSize: "40px" }} />
+						<Typography variant="h4">Twitterにログイン</Typography>
+					</Box>
+					<Box component="form" noValidate onSubmit={handleSubmit}>
+						<TextField
+							fullWidth
+							id="usernameOrEmail"
+							name="usernameOrEmail"
+							label="名前/Eメール"
+							placeholder="名前またはメールアドレスを入力してください"
+							margin="normal"
+							required
+							error={usernameOrEmailErrMsg !== ""}
+							helperText={usernameOrEmailErrMsg}
+						/>
+						<TextField
+							fullWidth
+							type={passwordVisible ? "text" : "password"}
+							id="password"
+							name="password"
+							label="パスワード"
+							margin="normal"
+							required
+							error={passwordErrMsg !== ""}
+							helperText={passwordErrMsg}
+							InputProps={{
+								endAdornment: (
+									<InputAdornment position="end">
+										<IconButton edge="end" onClick={togglePasswordVisibility}>
+											{passwordVisible ? <VisibilityOff /> : <Visibility />}
+										</IconButton>
+									</InputAdornment>
+								),
+							}}
+						/>
 						<Button
 							component={Link}
 							to="/auth"
@@ -189,16 +193,62 @@ const LoginDialog = ({ open, registerOpen, onClose }: LoginDialogProps) => {
 							onClick={() => {
 								onClose();
 								setTimeout(() => {
-									registerOpen();
+									handleForgotPasswordOpen();
 								}, 100);
 							}}
 						>
-							登録
+							パスワードを忘れた場合はこちら
 						</Button>
-					</Typography>
-				</Box>
-			</DialogContent>
-		</Dialog>
+						<LoadingButton
+							type="submit"
+							fullWidth
+							sx={{
+								mt: 3,
+								mb: 2,
+								padding: "15px",
+								borderRadius: "10px",
+								bgcolor: "#14171A",
+								color: "#F5F8FA",
+								fontSize: "1rem",
+								":hover": { background: "#14171A", opacity: 0.7 },
+							}}
+							color="primary"
+							variant="contained"
+							loading={loading}
+						>
+							ログイン
+						</LoadingButton>
+						<Typography>
+							アカウントをお持ちでない場合は
+							<Button
+								component={Link}
+								to="/auth"
+								sx={{
+									fontSize: "1rem",
+									padding: 0,
+									mb: "2px",
+									":hover": {
+										textDecoration: "underline",
+									},
+								}}
+								onClick={() => {
+									onClose();
+									setTimeout(() => {
+										registerOpen();
+									}, 100);
+								}}
+							>
+								登録
+							</Button>
+						</Typography>
+					</Box>
+				</DialogContent>
+			</Dialog>
+			<ForgotPasswordDialog
+				open={forgotPasswordOpen}
+				onClose={handleForgotPasswordClose}
+			/>
+		</>
 	);
 };
 

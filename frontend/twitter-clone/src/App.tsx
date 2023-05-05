@@ -3,6 +3,7 @@ import {
 	Collapse,
 	CssBaseline,
 	IconButton,
+	Slide,
 	ThemeProvider,
 	Typography,
 	createTheme,
@@ -15,12 +16,15 @@ import { useEffect, useState } from "react";
 import { useUserContext } from "./contexts/UserProvider";
 
 const App = () => {
-	const { logoutEvent } = useUserContext();
+	const { logoutEvent, settingPasswordEvent } = useUserContext();
 	const [open, setOpen] = useState<boolean>(false);
+	const [settingPasswordOpen, setSettingPasswordOpen] =
+		useState<boolean>(false);
 
 	useEffect(() => {
 		if (logoutEvent) setOpen(true);
-	}, [logoutEvent]);
+		if (settingPasswordEvent) setSettingPasswordOpen(true);
+	}, [logoutEvent, settingPasswordEvent]);
 
 	const theme = createTheme({
 		palette: {
@@ -43,28 +47,58 @@ const App = () => {
 	return (
 		<ThemeProvider theme={theme}>
 			<CssBaseline />
-			<Collapse in={open}>
-				<Alert
-					action={
-						<IconButton
-							aria-label="close"
-							color="inherit"
-							size="small"
-							onClick={() => {
-								setOpen(false);
-							}}
+			{open && (
+				<Slide direction="down" in={open}>
+					<Collapse in={open}>
+						<Alert
+							action={
+								<IconButton
+									aria-label="close"
+									color="inherit"
+									size="small"
+									onClick={() => {
+										setOpen(false);
+									}}
+								>
+									<CloseIcon fontSize="inherit" />
+								</IconButton>
+							}
+							sx={{ mb: 2 }}
+							severity="success"
 						>
-							<CloseIcon fontSize="inherit" />
-						</IconButton>
-					}
-					sx={{ mb: 2 }}
-					severity="success"
-				>
-					<Typography variant="body2" sx={{ fontWeight: "bold" }}>
-						Logout Successful!
-					</Typography>
-				</Alert>
-			</Collapse>
+							<Typography variant="body2" sx={{ fontWeight: "bold" }}>
+								Logout Successful!
+							</Typography>
+						</Alert>
+					</Collapse>
+				</Slide>
+			)}
+			{settingPasswordOpen && (
+				<Slide direction="down" in={settingPasswordOpen}>
+					<Collapse in={settingPasswordOpen}>
+						<Alert
+							action={
+								<IconButton
+									aria-label="close"
+									color="inherit"
+									size="small"
+									onClick={() => {
+										setSettingPasswordOpen(false);
+									}}
+								>
+									<CloseIcon fontSize="inherit" />
+								</IconButton>
+							}
+							sx={{ mb: 2 }}
+							severity="success"
+						>
+							<Typography variant="body2" sx={{ fontWeight: "bold" }}>
+								パスワード再設定が完了しました！
+							</Typography>
+						</Alert>
+					</Collapse>
+				</Slide>
+			)}
 			<BrowserRouter>
 				<Routes>
 					<Route path="/" element={<AppLayout />} />
