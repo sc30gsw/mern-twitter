@@ -101,9 +101,11 @@ const LoginDialog = ({ open, registerOpen, onClose }: LoginDialogProps) => {
 			const user = res.data.user;
 			setUser({
 				id: user._id,
+				profileName: user.profileName,
 				username: user.username,
 				email: user.email,
 				icon: user.icon,
+				description: user.description,
 				version: user.__v,
 			});
 
@@ -142,7 +144,7 @@ const LoginDialog = ({ open, registerOpen, onClose }: LoginDialogProps) => {
 				>
 					<CloseIcon />
 				</IconButton>
-				<DialogContent>
+				<DialogContent sx={{ width: "400px" }}>
 					<Box sx={{ textAlign: "center" }}>
 						<Twitter sx={{ color: "#1DA1F2", fontSize: "40px" }} />
 						<Typography variant="h4">Twitterにログイン</Typography>
@@ -152,8 +154,8 @@ const LoginDialog = ({ open, registerOpen, onClose }: LoginDialogProps) => {
 							fullWidth
 							id="usernameOrEmail"
 							name="usernameOrEmail"
-							label="名前/Eメール"
-							placeholder="名前またはメールアドレスを入力してください"
+							label="ユーザー名/Eメール"
+							placeholder="ユーザー名またはメールアドレスを入力"
 							margin="normal"
 							required
 							error={usernameOrEmailErrMsg !== ""}

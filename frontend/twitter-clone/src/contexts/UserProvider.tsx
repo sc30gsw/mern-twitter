@@ -2,9 +2,11 @@ import { createContext, useContext, useState } from "react";
 
 type User = {
 	id: string;
+	profileName: string;
 	username: string;
 	email: string;
 	icon: string;
+	description: string;
 	version: number;
 };
 
