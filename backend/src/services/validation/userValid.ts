@@ -68,6 +68,11 @@ export const validUsernameOrEmail = oneOf([
 			.withMessage("ユーザー名は8文字以上で入力してください"),
 	],
 	[
+		body("username")
+			.matches(/^@[\w]+$/)
+			.withMessage("ユーザー名は@で始まり、半角英数字のみで入力してください"),
+	],
+	[
 		body("email")
 			.exists()
 			.withMessage("ユーザー名またはメールアドレスを入力してください")
