@@ -10,7 +10,7 @@ import {
 	Typography,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import React, { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import authApi from "../../../api/authApi";
 import { useUserContext } from "../../../contexts/UserProvider";
@@ -22,52 +22,65 @@ type RegisterDialogProps = {
 	onClose: () => void;
 };
 
+const generateRandomString = (length: number) => {
+	const characters =
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+	let result = "";
+
+	for (let i = 0; i < length; i++) {
+		result += characters.charAt(Math.floor(Math.random() * characters.length));
+	}
+
+	return result;
+};
+
 const RegisterDialog = ({ open, loginOpen, onClose }: RegisterDialogProps) => {
 	const navigate = useNavigate();
 	const { setUser } = useUserContext();
 
 	const [loading, setLoading] = useState<boolean>(false);
-	const [usernameErrMsg, setUsernameErrMsg] = useState<string>("");
+	const [page, setPage] = useState<number>(1);
+	const [profileName, setProfileName] = useState<string>("");
+	const [email, setEmail] = useState<string>("");
+	const [password, setPassword] = useState<string>("");
+	const [confirmPassword, setConfirmPassword] = useState<string>("");
+	const [username, setUsername] = useState<string>(
+		`@${generateRandomString(15)}`
+	);
+	const [profileNameErrMsg, setProfileNameErrMsg] = useState<string>("");
 	const [emailErrMsg, setEmailErrMsg] = useState<string>("");
 	const [passwordErrMsg, setPasswordErrMsg] = useState<string>("");
 	const [confirmPasswordErrMsg, setConfirmPasswordErrMsg] =
 		useState<string>("");
+	const [usernameErrMsg, setUsernameErrMsg] = useState<string>("");
 	const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
 	const [confirmPasswordVisible, setConfirmPasswordVisible] =
 		useState<boolean>(false);
+
+	const confirmPasswordRef = useRef<HTMLInputElement>(null);
+
+	useEffect(() => {
+		if (page === 2 && confirmPasswordRef.current) {
+			confirmPasswordRef.current.blur();
+		}
+	}, [page]);
 
 	const togglePasswordVisibility = () => setPasswordVisible(!passwordVisible);
 	const toggleConfirmPasswordVisibility = () =>
 		setConfirmPasswordVisible(!confirmPasswordVisible);
 
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
+	const validFirstPage = () => {
 		setLoading(true);
 
-		setUsernameErrMsg("");
-		setEmailErrMsg("");
-		setPasswordErrMsg("");
-		setConfirmPasswordErrMsg("");
-
-		// 入力欄の値を取得
-		const data = new FormData(e.target as HTMLFormElement);
-		const username = data.get("username")?.toString().trim() as string;
-		const email = data.get("email")?.toString().trim() as string;
-		const password = data.get("password")?.toString().trim() as string;
-		const confirmPassword = data
-			.get("confirmPassword")
-			?.toString()
-			.trim() as string;
-
-		// バリデーション
 		let err = false;
 		const emailFormat = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/i;
-		if (!username) {
+
+		if (!profileName) {
 			err = true;
-			setUsernameErrMsg("名前を入力してください");
-		} else if (username.length < 8) {
+			setProfileNameErrMsg("名前を入力してください");
+		} else if (profileName.length < 8) {
 			err = true;
-			setUsernameErrMsg("名前は8文字以上で入力してください");
+			setProfileNameErrMsg("名前は8文字以上で入力してください");
 		}
 
 		if (!email) {
@@ -77,6 +90,17 @@ const RegisterDialog = ({ open, loginOpen, onClose }: RegisterDialogProps) => {
 			err = true;
 			setEmailErrMsg("有効なメールアドレスを入力してください");
 		}
+
+		if (err) return setLoading(false);
+
+		setLoading(false);
+		setPage(page + 1);
+	};
+
+	const validSecondPage = () => {
+		setLoading(true);
+
+		let err = false;
 
 		if (!password) {
 			err = true;
@@ -103,10 +127,35 @@ const RegisterDialog = ({ open, loginOpen, onClose }: RegisterDialogProps) => {
 
 		if (err) return setLoading(false);
 
+		setLoading(false);
+		setPage(page + 1);
+	};
+
+	const handleClick = async () => {
+		setLoading(true);
+
+		// バリデーション
+		let err = false;
+		const usernameFormat = /^\w+$/;
+
+		if (!username) {
+			err = true;
+			setUsernameErrMsg("ユーザー名を入力してください");
+		} else if (
+			!username.startsWith("@") ||
+			!usernameFormat.test(username.slice(1))
+		) {
+			err = true;
+			setUsernameErrMsg("ユーザー名は@で始まり、半角英数字で入力してください");
+		}
+
+		if (err) return setLoading(false);
+
 		// 新規登録API呼出
 		try {
 			const res = await authApi.register({
 				username,
+				profileName,
 				email,
 				password,
 				confirmPassword,
@@ -117,29 +166,50 @@ const RegisterDialog = ({ open, loginOpen, onClose }: RegisterDialogProps) => {
 			const user = res.data.user;
 			setUser({
 				id: user._id,
+				profileName: user.profileName,
 				username: user.username,
 				email: user.email,
 				icon: user.icon,
+				description: user.description,
 				version: user.__v,
 			});
 
 			setLoading(false);
-
 			console.log("新規登録に成功しました");
 			onClose();
 			navigate("/");
 		} catch (err: any) {
 			const errors = err.data.errors;
 			console.log(errors);
-
 			setLoading(false);
+		}
+	};
+
+	const handleKeyDown = (e: any) => {
+		if (e.key === "Enter") {
+			e.preventDefault();
+			switch (page) {
+				case 1:
+					validFirstPage();
+					break;
+
+				case 2:
+					validSecondPage();
+					break;
+
+				case 3:
+					handleClick();
+			}
 		}
 	};
 
 	return (
 		<Dialog
 			open={open}
-			onClose={onClose}
+			onClose={() => {
+				onClose();
+				setPage(1);
+			}}
 			sx={{
 				"& .MuiDialog-paper": {
 					padding: "50px",
@@ -148,7 +218,10 @@ const RegisterDialog = ({ open, loginOpen, onClose }: RegisterDialogProps) => {
 			}}
 		>
 			<IconButton
-				onClick={onClose}
+				onClick={() => {
+					onClose();
+					setPage(1);
+				}}
 				sx={{
 					position: "absolute",
 					top: 8,
@@ -157,126 +230,190 @@ const RegisterDialog = ({ open, loginOpen, onClose }: RegisterDialogProps) => {
 			>
 				<CloseIcon />
 			</IconButton>
-			<DialogContent>
+			<DialogContent sx={{ width: "400px" }}>
 				<Box sx={{ textAlign: "center" }}>
 					<Twitter sx={{ color: "#1DA1F2", fontSize: "40px" }} />
 					<Typography variant="h4">アカウントを作成</Typography>
 				</Box>
-				<Box component="form" onSubmit={handleSubmit} noValidate>
-					<TextField
-						fullWidth
-						id="username"
-						name="username"
-						label="名前"
-						margin="normal"
-						required
-						helperText={usernameErrMsg}
-						error={usernameErrMsg !== ""}
-						disabled={loading}
-					/>
-					<TextField
-						fullWidth
-						type="email"
-						name="email"
-						id="email"
-						label="Email"
-						margin="normal"
-						required
-						helperText={emailErrMsg}
-						error={emailErrMsg !== ""}
-						disabled={loading}
-					/>
-					<TextField
-						fullWidth
-						type={passwordVisible ? "text" : "password"}
-						id="password"
-						name="password"
-						label="パスワード"
-						margin="normal"
-						required
-						helperText={passwordErrMsg}
-						error={passwordErrMsg !== ""}
-						disabled={loading}
-						InputProps={{
-							endAdornment: (
-								<InputAdornment position="end">
-									<IconButton edge="end" onClick={togglePasswordVisibility}>
-										{passwordVisible ? <VisibilityOff /> : <Visibility />}
-									</IconButton>
-								</InputAdornment>
-							),
-						}}
-					/>
-					<TextField
-						fullWidth
-						type={confirmPasswordVisible ? "text" : "password"}
-						id="confirmPassword"
-						name="confirmPassword"
-						label="確認用パスワード"
-						margin="normal"
-						required
-						helperText={confirmPasswordErrMsg}
-						error={confirmPasswordErrMsg !== ""}
-						disabled={loading}
-						InputProps={{
-							endAdornment: (
-								<InputAdornment position="end">
-									<IconButton
-										edge="end"
-										onClick={toggleConfirmPasswordVisibility}
-									>
-										{confirmPasswordVisible ? (
-											<VisibilityOff />
-										) : (
-											<Visibility />
-										)}
-									</IconButton>
-								</InputAdornment>
-							),
-						}}
-					/>
-					<LoadingButton
-						type="submit"
-						fullWidth
-						sx={{
-							mt: 3,
-							mb: 2,
-							padding: "15px",
-							borderRadius: "10px",
-							bgcolor: "#14171A",
-							color: "#F5F8FA",
-							fontSize: "1rem",
-							":hover": { background: "#14171A", opacity: 0.7 },
-						}}
-						color="primary"
-						variant="contained"
-						loading={loading}
-					>
-						登録
-					</LoadingButton>
-					<Typography>
-						アカウントをお持ちの場合は
-						<Button
-							component={Link}
-							to="/auth"
+				<Box component="form" noValidate onKeyDown={handleKeyDown}>
+					{page === 1 ? (
+						<>
+							<TextField
+								fullWidth
+								id="profileName"
+								name="profileName"
+								value={profileName}
+								label="名前"
+								margin="normal"
+								required
+								onChange={(e) => setProfileName(e.target.value)}
+								helperText={profileNameErrMsg}
+								error={profileNameErrMsg !== ""}
+							/>
+							<TextField
+								fullWidth
+								type="email"
+								name="email"
+								value={email}
+								id="email"
+								label="Email"
+								margin="normal"
+								required
+								onChange={(e) => setEmail(e.target.value)}
+								helperText={emailErrMsg}
+								error={emailErrMsg !== ""}
+								disabled={loading}
+							/>
+						</>
+					) : page === 2 ? (
+						<>
+							<TextField
+								fullWidth
+								type={passwordVisible ? "text" : "password"}
+								id="password"
+								name="password"
+								value={password}
+								label="パスワード"
+								onChange={(e) => setPassword(e.target.value)}
+								margin="normal"
+								required
+								helperText={passwordErrMsg}
+								error={passwordErrMsg !== ""}
+								disabled={loading}
+								InputProps={{
+									endAdornment: (
+										<InputAdornment position="end">
+											<IconButton edge="end" onClick={togglePasswordVisibility}>
+												{passwordVisible ? <VisibilityOff /> : <Visibility />}
+											</IconButton>
+										</InputAdornment>
+									),
+								}}
+							/>
+							<TextField
+								fullWidth
+								inputRef={confirmPasswordRef}
+								type={confirmPasswordVisible ? "text" : "password"}
+								id="confirmPassword"
+								name="confirmPassword"
+								value={confirmPassword}
+								label="確認用パスワード"
+								margin="normal"
+								required
+								onChange={(e) => setConfirmPassword(e.target.value)}
+								helperText={confirmPasswordErrMsg}
+								error={confirmPasswordErrMsg !== ""}
+								disabled={loading}
+								InputProps={{
+									endAdornment: (
+										<InputAdornment position="end">
+											<IconButton
+												edge="end"
+												onClick={toggleConfirmPasswordVisibility}
+											>
+												{confirmPasswordVisible ? (
+													<VisibilityOff />
+												) : (
+													<Visibility />
+												)}
+											</IconButton>
+										</InputAdornment>
+									),
+								}}
+							/>
+						</>
+					) : page === 3 ? (
+						<TextField
+							fullWidth
+							id="userName"
+							name="userName"
+							value={username}
+							label="ユーザー名"
+							margin="normal"
+							required
+							onChange={(e) => setUsername(e.target.value)}
+							helperText={usernameErrMsg}
+							error={usernameErrMsg !== ""}
+							disabled={loading}
+						/>
+					) : (
+						<></>
+					)}
+					<Box sx={{ display: "flex", justifyContent: "space-between" }}>
+						{page !== 1 && (
+							<Button
+								sx={{
+									width: "45%",
+									mt: 3,
+									mb: 2,
+									padding: "15px",
+									borderRadius: "10px",
+									bgcolor: "#f7f7f7",
+									color: "#14171A",
+									fontSize: "1rem",
+									":hover": { background: "#F5F8FA", opacity: 0.7 },
+								}}
+								color="primary"
+								variant="contained"
+								onClick={() => {
+									setPage(page - 1);
+								}}
+							>
+								戻る
+							</Button>
+						)}
+						<LoadingButton
 							sx={{
+								width: page === 1 ? "100%" : "45%",
+								mt: 3,
+								mb: 2,
+								padding: "15px",
+								borderRadius: "10px",
+								bgcolor: "#14171A",
+								color: "#F5F8FA",
 								fontSize: "1rem",
-								padding: 0,
-								mb: "2px",
-								":hover": {
-									textDecoration: "underline",
-								},
+								":hover": { background: "#14171A", opacity: 0.7 },
 							}}
-							onClick={() => {
-								onClose();
-								setTimeout(() => {
-									loginOpen();
-								}, 100);
-							}}
+							color="primary"
+							variant="contained"
+							loading={loading}
+							onClick={
+								page === 1
+									? validFirstPage
+									: page === 2
+									? validSecondPage
+									: handleClick
+							}
 						>
-							ログイン
-						</Button>
-					</Typography>
+							{page === 3 ? "登録" : "次へ"}
+						</LoadingButton>
+					</Box>
+					{page === 1 && (
+						<Typography>
+							アカウントをお持ちの場合は
+							<Button
+								component={Link}
+								to="/auth"
+								sx={{
+									fontSize: "1rem",
+									padding: 0,
+									mb: "2px",
+									":hover": {
+										textDecoration: "underline",
+									},
+								}}
+								onClick={() => {
+									onClose();
+									setPage(1);
+									setTimeout(() => {
+										loginOpen();
+									}, 100);
+								}}
+							>
+								ログイン
+							</Button>
+						</Typography>
+					)}
 				</Box>
 			</DialogContent>
 		</Dialog>
