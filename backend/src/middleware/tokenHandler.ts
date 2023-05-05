@@ -12,7 +12,7 @@ declare global {
 }
 
 // JWTトークンを復号する処理
-export const tokenDecode = (req: express.Request) => {
+const tokenDecode = (req: express.Request) => {
 	// リクエストヘッダーの"authorization"を取得
 	const bearerHeader = req.headers.authorization;
 
