@@ -2,8 +2,6 @@ import express from "express";
 import CryptoJS from "crypto-js";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
-import { sendPasswordResetEmail } from "../middleware/mailHandler";
-import { tokenDecode } from "../middleware/tokenHandler";
 import User from "../models/User";
 
 export const register = async (req: express.Request, res: express.Response) => {
@@ -14,7 +12,7 @@ export const register = async (req: express.Request, res: express.Response) => {
 		req.body.password = CryptoJS.AES.encrypt(
 			password,
 			process.env.PASSWORD_SECRET_KEY as string
-		);
+		).toString();
 
 		// ユーザー新規登録
 		const user = await User.create(req.body);
@@ -76,69 +74,90 @@ export const login = async (req: express.Request, res: express.Response) => {
 	}
 };
 
-export const resetPasswordRequest = async (
+export const forgotPassword = async (
 	req: express.Request,
 	res: express.Response
 ) => {
-	const { email } = req.body.email;
+	const { username, email } = req.body;
 
 	try {
-		const user = await User.findOne({ email });
-
+		const user = await getUserUsernameOrEmail(username, email);
 		if (!user) {
-			return res
-				.status(400)
-				.json({ message: "このメールアドレスのユーザーは存在しません。" });
+			return res.status(400).json({
+				errors: [
+					{
+						param: "usernameOrEmail",
+						msg: "この名前またはメールアドレスのユーザーは存在しません。",
+					},
+				],
+			});
 		}
 
-		const token = jwt.sign(
-			{ id: user._id },
-			process.env.TOKEN_SECRET_KEY as string,
-			{ expiresIn: "1h" }
-		);
-		// ユーザーにパスワードリセットメールを送信
-		await sendPasswordResetEmail(email, token);
-
-		res
-			.status(200)
-			.json({ message: "パスワードリセットメールを送信しました。" });
-	} catch (error) {
-		res.status(500).json({ error: "エラーが発生しました。" });
+		return res.status(200).json({ user });
+	} catch (err) {
+		res.status(500).json(err);
 	}
 };
 
-export const passwordReset = async (
+export const resetPassword = async (
 	req: express.Request,
 	res: express.Response
 ) => {
-	const { password } = req.body.password;
-
+	const { username, email, password } = req.body;
 	try {
-		// 復号したトークンを取得
-		const decodedToken = tokenDecode(req);
-
-		// ユーザーIDを取得し、ユーザーが存在するか確認
-		const user = await User.findById((decodedToken as any).id);
-
+		const user = await getUserUsernameOrEmail(username, email);
 		if (!user) {
-			return res.status(400).json({ error: "ユーザーが見つかりません。" });
+			return res.status(400).json({
+				errors: [
+					{
+						param: "usernameOrEmail",
+						msg: "この名前またはメールアドレスのユーザーは存在しません。",
+					},
+				],
+			});
 		}
 
-		// 新しいパスワードの暗号化
+		// パスワードの暗号化
 		req.body.password = CryptoJS.AES.encrypt(
 			password,
 			process.env.PASSWORD_SECRET_KEY as string
+		).toString();
+
+		// パスワード更新
+		const updatedUser = await User.findOneAndUpdate(
+			{ _id: user._id, __v: user.__v },
+			{
+				$set: { password: req.body.password },
+				$inc: { __v: 1 },
+			},
+			{ new: true, returnOriginal: false }
 		);
 
-		// 新しいパスワードでユーザーパスワードを更新
-		user.password = req.body.password;
-		await user.save();
-
-		res.status(200).json({ message: "パスワードが正常に更新されました。" });
-	} catch (error) {
-		if (error instanceof jwt.JsonWebTokenError) {
-			return res.status(400).json({ error: "無効なトークンです。" });
+		if (!updatedUser) {
+			return res.status(409).json({
+				errors: [
+					{
+						param: "version",
+						msg: "最新のデータに更新してから実行してください",
+					},
+				],
+			});
 		}
-		res.status(500).json({ error: "エラーが発生しました。" });
+
+		return res.status(200).json({ updatedUser });
+	} catch (err) {
+		console.log(err);
+		return res.status(500).json(err);
 	}
+};
+
+const getUserUsernameOrEmail = async (
+	username: string | undefined,
+	email: string | undefined
+) => {
+	const user = await User.findOne({
+		$or: [{ username: username }, { email: email }],
+	});
+
+	return user;
 };

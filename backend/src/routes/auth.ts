@@ -1,5 +1,5 @@
 import express from "express";
-import { login, register, resetPasswordRequest } from "../services/userService";
+import { login, register, resetPassword } from "../services/userService";
 import {
 	printErrors,
 	validConfirmPasswordLength,
@@ -51,15 +51,16 @@ router.post(
 	}
 );
 
-// パスワードリセットリクエストAPIの呼出
+// パスワードリセットAPIの呼出
 router.post(
-	"/reset-password-request",
-	async (req: express.Request, res: express.Response) => {
-		resetPasswordRequest(req, res);
+	"/resetPassword",
+	validPasswordLength,
+	validConfirmPasswordLength,
+	validPasswordMatches,
+	printErrors,
+	(req: express.Request, res: express.Response) => {
+		resetPassword(req, res);
 	}
 );
-
-// パスワードリセットAPIの呼出
-router.post("/reset-password/:token", async (req, res) => {});
 
 module.exports = router;
