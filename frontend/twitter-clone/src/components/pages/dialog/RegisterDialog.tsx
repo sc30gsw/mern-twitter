@@ -66,6 +66,23 @@ const RegisterDialog = ({ open, loginOpen, onClose }: RegisterDialogProps) => {
 		}
 	}, [page]);
 
+	const onCloseWithExtraFunc = () => {
+		onClose();
+		setLoading(false);
+		setPage(1);
+		setProfileName("");
+		setEmail("");
+		setPassword("");
+		setConfirmPassword("");
+		setUsername(`@${generateRandomString(15)}`);
+		setProfileNameErrMsg("");
+		setEmailErrMsg("");
+		setPasswordErrMsg("");
+		setConfirmPasswordErrMsg("");
+		setPasswordVisible(false);
+		setConfirmPasswordVisible(false);
+	};
+
 	// パスワードの表示・非表示
 	const togglePasswordVisibility = () => setPasswordVisible(!passwordVisible);
 	const toggleConfirmPasswordVisibility = () =>
@@ -178,7 +195,7 @@ const RegisterDialog = ({ open, loginOpen, onClose }: RegisterDialogProps) => {
 
 			setLoading(false);
 			console.log("新規登録に成功しました");
-			onClose();
+			onCloseWithExtraFunc();
 			navigate("/");
 		} catch (err: any) {
 			const errors = err.data.errors;
@@ -209,10 +226,7 @@ const RegisterDialog = ({ open, loginOpen, onClose }: RegisterDialogProps) => {
 	return (
 		<Dialog
 			open={open}
-			onClose={() => {
-				onClose();
-				setPage(1);
-			}}
+			onClose={onCloseWithExtraFunc}
 			sx={{
 				"& .MuiDialog-paper": {
 					padding: "50px",
@@ -221,10 +235,7 @@ const RegisterDialog = ({ open, loginOpen, onClose }: RegisterDialogProps) => {
 			}}
 		>
 			<IconButton
-				onClick={() => {
-					onClose();
-					setPage(1);
-				}}
+				onClick={onCloseWithExtraFunc}
 				sx={{
 					position: "absolute",
 					top: 8,
@@ -406,8 +417,7 @@ const RegisterDialog = ({ open, loginOpen, onClose }: RegisterDialogProps) => {
 									},
 								}}
 								onClick={() => {
-									onClose();
-									setPage(1);
+									onCloseWithExtraFunc();
 									setTimeout(() => {
 										loginOpen();
 									}, 100);
