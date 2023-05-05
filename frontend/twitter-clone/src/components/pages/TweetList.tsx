@@ -1,13 +1,14 @@
 import { Box, Typography, List, IconButton } from "@mui/material";
 import ListItem from "@mui/material/ListItem";
 import Divider from "@mui/material/Divider";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
 import Avatar from "@mui/material/Avatar";
 import { Link } from "react-router-dom";
 
 const TweetList = () => {
 	return (
-		<Box sx={{ mt: "10px", borderTop: "solid 1px #657786" }}>
+		<Box sx={{ borderTop: "solid 1px #657786" }}>
 			<List sx={{ width: "100%", bgcolor: "background.paper" }}>
 				<ListItem alignItems="flex-start">
 					<ListItemAvatar>
@@ -16,28 +17,44 @@ const TweetList = () => {
 						</IconButton>
 					</ListItemAvatar>
 					<Box sx={{ flexGrow: 1, mt: "20px" }}>
-						<Box sx={{ display: "flex", alignItems: "center" }}>
-							<Typography
-								sx={{
-									fontWeight: "bold",
-									":hover": { textDecoration: "underline" },
-								}}
-								component="span"
-								variant="body2"
-								color="text.primary"
-							>
-								<Link to="/" style={{ color: "black", textDecoration: "none" }}>
-									UserName
-								</Link>
-							</Typography>
-							<Typography
-								sx={{ ml: "10px" }}
-								component="span"
-								variant="body2"
-								color="text.primary"
-							>
-								2023/5/4
-							</Typography>
+						<Box
+							sx={{
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "space-between",
+							}}
+						>
+							<Box>
+								<Typography
+									sx={{
+										fontWeight: "bold",
+										":hover": { textDecoration: "underline" },
+									}}
+									component="span"
+									variant="body2"
+									color="text.primary"
+								>
+									<Link
+										to="/"
+										style={{ color: "black", textDecoration: "none" }}
+									>
+										UserName
+									</Link>
+								</Typography>
+								<Typography
+									sx={{ ml: "10px" }}
+									component="span"
+									variant="body2"
+									color="text.primary"
+								>
+									2023/5/4
+								</Typography>
+							</Box>
+							<Box>
+								<IconButton>
+									<MoreHorizIcon />
+								</IconButton>
+							</Box>
 						</Box>
 						<Typography>
 							ChatGPTを子供が使うデメリットを具体的に提示出来ないのに禁止しようとする。12歳という年齢を選んだ理由も無し。

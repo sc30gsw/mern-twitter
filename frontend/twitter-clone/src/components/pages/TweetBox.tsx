@@ -17,7 +17,7 @@ type TweetBoxPropsType = {
 
 const TweetBox = ({ title, rows }: TweetBoxPropsType) => {
 	return (
-		<>
+		<Box>
 			<Typography variant="h5">{title}</Typography>
 			<Box
 				component="form"
@@ -86,7 +86,7 @@ const TweetBox = ({ title, rows }: TweetBoxPropsType) => {
 					</Box>
 				</Box>
 			</Box>
-		</>
+		</Box>
 	);
 };
 
