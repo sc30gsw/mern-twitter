@@ -20,12 +20,13 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import Sign from "./Sign";
 import { useState } from "react";
 import TweetBoxDialog from "./dialog/TweetBoxDialog";
+import { useUserContext } from "../../contexts/UserProvider";
 
 const Sidebar = () => {
 	// 現在のルートを取得
 	const location = useLocation();
 
-	const user = localStorage.getItem("user");
+	const { user } = useUserContext();
 
 	const [openDialog, setOpenDialog] = useState<boolean>(false);
 
@@ -87,7 +88,6 @@ const Sidebar = () => {
 					height: "90vh",
 					mt: "10px",
 					ml: "5px",
-					mr: "10px",
 					display: "flex",
 					flexDirection: "column",
 				}}
@@ -155,9 +155,13 @@ const Sidebar = () => {
 								location.pathname === "/message"
 							)}
 						</Link>
-						<Link to="/" style={{ marginTop: "10px" }}>
+						<Link
+							to={`/${user.username.split("@").join("")}`}
+							style={{ marginTop: "10px" }}
+						>
 							{renderButtonWithTooltip(
-								location.pathname === "/profile" ? (
+								location.pathname ===
+									`/${user.username.split("@").join("")}` ? (
 									<PersonIcon sx={{ color: "#14171A", fontSize: "40px" }} />
 								) : (
 									<PersonOutlineOutlinedIcon
@@ -165,7 +169,7 @@ const Sidebar = () => {
 									/>
 								),
 								"プロフィール",
-								location.pathname === "/profile"
+								location.pathname === `/${user.username.split("@").join("")}`
 							)}
 						</Link>
 						{isSmallScreen ? (
