@@ -6,6 +6,7 @@ type User = {
 	username: string;
 	email: string;
 	icon: string;
+	profileImg: string;
 	description: string;
 	version: number;
 };
