@@ -59,15 +59,29 @@ const LoginDialog = ({ open, registerOpen, onClose }: LoginDialogProps) => {
 
 		// バリデーション
 		let err = false;
+
 		let username;
 		let email;
+
 		const emailFormat = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/i;
+		const usernameFormat = /^\w+$/;
+
 		if (!usernameOrEmail) {
-			setUsernameOrEmailErrMsg("名前またはメールアドレスを入力してください");
+			setUsernameOrEmailErrMsg(
+				"ユーザー名またはメールアドレスを入力してください"
+			);
 			err = true;
 		} else if (emailFormat.test(usernameOrEmail)) {
 			email = usernameOrEmail;
 			username = "";
+		} else if (
+			!usernameOrEmail.startsWith("@") ||
+			!usernameFormat.test(usernameOrEmail.slice(1))
+		) {
+			setUsernameOrEmailErrMsg(
+				"ユーザー名は@で始まり、半角英数字で入力してください"
+			);
+			err = true;
 		} else {
 			username = usernameOrEmail;
 			email = "";
