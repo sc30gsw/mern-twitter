@@ -11,6 +11,14 @@ export const validUsernameLength = body("username")
 	.isLength({ min: 8 })
 	.withMessage("ユーザー名は8文字以上で入力してください");
 
+export const validUsernameFormat = body("username")
+	.matches(/^@[\w]+$/)
+	.withMessage("ユーザー名は@で始まり、半角英数字のみで入力してください");
+
+export const validProfileNameLength = body("profileName")
+	.isLength({ min: 8 })
+	.withMessage("名前は8文字以上で入力してください");
+
 export const validEmailFormat = body("email")
 	.isEmail()
 	.withMessage("有効なメールアドレスを入力してください")

@@ -7,7 +7,9 @@ import {
 	validEmailFormat,
 	validPasswordLength,
 	validPasswordMatches,
+	validProfileNameLength,
 	validUsernameExist,
+	validUsernameFormat,
 	validUsernameLength,
 	validUsernameOrEmail,
 } from "../services/validation/userValid";
@@ -19,6 +21,8 @@ const router = express.Router();
 router.post(
 	"/register",
 	validUsernameLength,
+	validUsernameFormat,
+	validProfileNameLength,
 	validEmailFormat,
 	validPasswordLength,
 	validConfirmPasswordLength,
