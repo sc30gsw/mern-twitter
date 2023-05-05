@@ -60,11 +60,13 @@ const RegisterDialog = ({ open, loginOpen, onClose }: RegisterDialogProps) => {
 	const confirmPasswordRef = useRef<HTMLInputElement>(null);
 
 	useEffect(() => {
+		// keyDownEventで2ページ目にパスワード(確認用)に自動フォーカスされるため、フォーカスを外すようにする
 		if (page === 2 && confirmPasswordRef.current) {
 			confirmPasswordRef.current.blur();
 		}
 	}, [page]);
 
+	// パスワードの表示・非表示
 	const togglePasswordVisibility = () => setPasswordVisible(!passwordVisible);
 	const toggleConfirmPasswordVisibility = () =>
 		setConfirmPasswordVisible(!confirmPasswordVisible);
@@ -185,6 +187,7 @@ const RegisterDialog = ({ open, loginOpen, onClose }: RegisterDialogProps) => {
 		}
 	};
 
+	// Enterキーでもページネーション可能になるようにする
 	const handleKeyDown = (e: any) => {
 		if (e.key === "Enter") {
 			e.preventDefault();
