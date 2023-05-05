@@ -12,6 +12,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { useState } from "react";
 import { Twitter, Visibility, VisibilityOff } from "@mui/icons-material";
 import { useUserContext } from "../../../contexts/UserProvider";
+import authApi from "../../../api/authApi";
 
 type ForgotPasswordDialogProps = {
 	open: boolean;
@@ -19,10 +20,13 @@ type ForgotPasswordDialogProps = {
 };
 
 const ForgotPasswordDialog = ({ open, onClose }: ForgotPasswordDialogProps) => {
-	const { triggerSettingPasswordEvent } = useUserContext();
+	const { user, setUser, triggerSettingPasswordEvent } = useUserContext();
 
 	const [loading, setLoading] = useState<boolean>(false);
 	const [page, setPage] = useState<number>(1);
+	const [usernameOrEmail, setUsernameOrEmail] = useState<string>("");
+	const [password, setPassword] = useState<string>("");
+	const [confirmPassword, setConfirmPassword] = useState<string>("");
 	const [usernameOrEmailErrMsg, setUsernameOrEmailErrMsg] =
 		useState<string>("");
 	const [passwordErrMsg, setPasswordErrMsg] = useState<string>("");
@@ -32,16 +36,174 @@ const ForgotPasswordDialog = ({ open, onClose }: ForgotPasswordDialogProps) => {
 	const [confirmPasswordVisible, setConfirmPasswordVisible] =
 		useState<boolean>(false);
 
-	const handleNext = () => setPage(page + 1);
-
 	const togglePasswordVisibility = () => setPasswordVisible(!passwordVisible);
 	const toggleConfirmPasswordVisibility = () =>
 		setConfirmPasswordVisible(!confirmPasswordVisible);
 
+	const onCloseWithExtraFunc = () => {
+		onClose();
+		setLoading(false);
+		setUsernameOrEmail("");
+		setPassword("");
+		setConfirmPassword("");
+		setUsernameOrEmailErrMsg("");
+		setPasswordErrMsg("");
+		setConfirmPasswordErrMsg("");
+		setPasswordVisible(false);
+		setConfirmPasswordVisible(false);
+		setPage(1);
+	};
+
+	const handleForgotPassword = async () => {
+		setLoading(true);
+
+		setUsernameOrEmailErrMsg("");
+		setPasswordErrMsg("");
+
+		// バリデーション
+		let err = false;
+
+		let username;
+		let email;
+
+		const emailFormat = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/i;
+		const usernameFormat = /^\w+$/;
+
+		if (!usernameOrEmail) {
+			setUsernameOrEmailErrMsg(
+				"ユーザー名またはメールアドレスを入力してください"
+			);
+			err = true;
+		} else if (emailFormat.test(usernameOrEmail)) {
+			email = usernameOrEmail;
+			username = "";
+		} else if (
+			!usernameOrEmail.startsWith("@") ||
+			!usernameFormat.test(usernameOrEmail.slice(1))
+		) {
+			setUsernameOrEmailErrMsg(
+				"ユーザー名は@で始まり、半角英数字で入力してください"
+			);
+			err = true;
+		} else {
+			username = usernameOrEmail;
+			email = "";
+		}
+
+		if (err) return setLoading(false);
+
+		// パスワード忘れリクエストAPI呼出
+		try {
+			const res = await authApi.forgotPassword({
+				username,
+				email,
+			});
+
+			const data = res.data.user;
+			setUser({
+				id: data._id,
+				profileName: data.profileName,
+				username: data.username,
+				email: data.email,
+				icon: data.icon,
+				description: data.description,
+				version: data.__v,
+			});
+
+			setLoading(false);
+
+			console.log("パスワード再設定リクエストに成功しました");
+			setPage(page + 1);
+		} catch (err: any) {
+			const errors = err.data.errors;
+			console.log(errors);
+
+			setLoading(false);
+		}
+	};
+
+	const handleResetPassword = async () => {
+		setLoading(true);
+
+		let err = false;
+
+		if (!password) {
+			err = true;
+			setPasswordErrMsg("パスワードを入力してください");
+		} else if (password.length < 8) {
+			err = true;
+			setPasswordErrMsg("パスワードは8文字以上で入力してください");
+		}
+
+		if (!confirmPassword) {
+			err = true;
+			setConfirmPasswordErrMsg("パスワード(確認用)を入力してください");
+		} else if (confirmPassword.length < 8) {
+			err = true;
+			setConfirmPasswordErrMsg(
+				"パスワード(確認用)は8文字以上で入力してください"
+			);
+		}
+
+		if (password !== confirmPassword) {
+			err = true;
+			setConfirmPasswordErrMsg("パスワードとパスワード(確認用)が一致しません");
+		}
+
+		if (err) return setLoading(false);
+
+		try {
+			const res = await authApi.resetPassword({
+				username: user?.username,
+				email: user?.email,
+				password: password,
+				confirmPassword: confirmPassword,
+			});
+
+			const updatedUser = res.data.updatedUser;
+			setUser({
+				id: updatedUser._id,
+				profileName: updatedUser.profileName,
+				username: updatedUser.username,
+				email: updatedUser.email,
+				icon: updatedUser.icon,
+				description: updatedUser.description,
+				version: updatedUser.__v,
+			});
+
+			onCloseWithExtraFunc();
+			triggerSettingPasswordEvent();
+			console.log("パスワード再設定に成功しました");
+		} catch (err: any) {
+			console.log(err);
+			const errors = err.data.errors;
+			console.log(errors);
+
+			setLoading(false);
+			onCloseWithExtraFunc();
+		}
+	};
+
+	// Enterキーでもページネーション可能になるようにする
+	const handleKeyDown = (e: any) => {
+		if (e.key === "Enter") {
+			e.preventDefault();
+			switch (page) {
+				case 1:
+					handleForgotPassword();
+					break;
+
+				case 2:
+					handleResetPassword();
+					break;
+			}
+		}
+	};
+
 	return (
 		<Dialog
 			open={open}
-			onClose={onClose}
+			onClose={onCloseWithExtraFunc}
 			sx={{
 				"& .MuiDialog-paper": {
 					padding: "50px",
@@ -50,7 +212,7 @@ const ForgotPasswordDialog = ({ open, onClose }: ForgotPasswordDialogProps) => {
 			}}
 		>
 			<IconButton
-				onClick={onClose}
+				onClick={onCloseWithExtraFunc}
 				sx={{
 					position: "absolute",
 					top: 8,
@@ -59,7 +221,7 @@ const ForgotPasswordDialog = ({ open, onClose }: ForgotPasswordDialogProps) => {
 			>
 				<CloseIcon />
 			</IconButton>
-			<DialogContent>
+			<DialogContent sx={{ width: "400px" }}>
 				{page === 1 && (
 					<>
 						<Box sx={{ textAlign: "center" }}>
@@ -82,17 +244,19 @@ const ForgotPasswordDialog = ({ open, onClose }: ForgotPasswordDialogProps) => {
 						</Typography>
 					</>
 				)}
-				<Box component="form" noValidate>
+				<Box component="form" noValidate onKeyDown={handleKeyDown}>
 					{page === 1 && (
 						<>
 							<TextField
 								fullWidth
 								id="usernameOrEmail"
 								name="usernameOrEmail"
-								label="名前/Eメール"
-								placeholder="名前またはメールアドレスを入力してください"
+								value={usernameOrEmail}
+								label="ユーザー名/Eメール"
+								placeholder="ユーザー名またはメールアドレスを入力"
 								margin="normal"
 								required
+								onChange={(e) => setUsernameOrEmail(e.target.value)}
 								error={usernameOrEmailErrMsg !== ""}
 								helperText={usernameOrEmailErrMsg}
 							/>
@@ -111,7 +275,7 @@ const ForgotPasswordDialog = ({ open, onClose }: ForgotPasswordDialogProps) => {
 								color="primary"
 								variant="contained"
 								loading={loading}
-								onClick={handleNext}
+								onClick={handleForgotPassword}
 							>
 								次へ
 							</LoadingButton>
@@ -124,9 +288,11 @@ const ForgotPasswordDialog = ({ open, onClose }: ForgotPasswordDialogProps) => {
 								type={passwordVisible ? "text" : "password"}
 								id="password"
 								name="password"
+								value={password}
 								label="パスワード"
 								margin="normal"
 								required
+								onChange={(e) => setPassword(e.target.value)}
 								helperText={passwordErrMsg}
 								error={passwordErrMsg !== ""}
 								disabled={loading}
@@ -145,9 +311,11 @@ const ForgotPasswordDialog = ({ open, onClose }: ForgotPasswordDialogProps) => {
 								type={confirmPasswordVisible ? "text" : "password"}
 								id="confirmPassword"
 								name="confirmPassword"
+								value={confirmPassword}
 								label="確認用パスワード"
 								margin="normal"
 								required
+								onChange={(e) => setConfirmPassword(e.target.value)}
 								helperText={confirmPasswordErrMsg}
 								error={confirmPasswordErrMsg !== ""}
 								disabled={loading}
@@ -183,10 +351,7 @@ const ForgotPasswordDialog = ({ open, onClose }: ForgotPasswordDialogProps) => {
 								color="primary"
 								variant="contained"
 								loading={loading}
-								onClick={() => {
-									onClose();
-									triggerSettingPasswordEvent();
-								}}
+								onClick={handleResetPassword}
 							>
 								パスワードを再設定
 							</LoadingButton>
