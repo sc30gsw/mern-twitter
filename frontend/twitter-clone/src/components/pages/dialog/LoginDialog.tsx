@@ -87,11 +87,6 @@ const LoginDialog = ({ open, registerOpen, onClose }: LoginDialogProps) => {
 			email = "";
 		}
 
-		if (email && !emailFormat.test(email)) {
-			setUsernameOrEmailErrMsg("有効なメールアドレスを入力してください");
-			err = true;
-		}
-
 		if (!password) {
 			err = true;
 			setPasswordErrMsg("パスワードを入力してください");
