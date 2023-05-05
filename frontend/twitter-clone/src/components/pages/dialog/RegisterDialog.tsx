@@ -5,6 +5,7 @@ import {
 	Dialog,
 	DialogContent,
 	IconButton,
+	InputAdornment,
 	TextField,
 	Typography,
 } from "@mui/material";
@@ -13,6 +14,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import authApi from "../../../api/authApi";
 import { useUserContext } from "../../../contexts/UserProvider";
+import { Twitter, Visibility, VisibilityOff } from "@mui/icons-material";
 
 type RegisterDialogProps = {
 	open: boolean;
@@ -30,6 +32,13 @@ const RegisterDialog = ({ open, loginOpen, onClose }: RegisterDialogProps) => {
 	const [passwordErrMsg, setPasswordErrMsg] = useState<string>("");
 	const [confirmPasswordErrMsg, setConfirmPasswordErrMsg] =
 		useState<string>("");
+	const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
+	const [confirmPasswordVisible, setConfirmPasswordVisible] =
+		useState<boolean>(false);
+
+	const togglePasswordVisibility = () => setPasswordVisible(!passwordVisible);
+	const toggleConfirmPasswordVisibility = () =>
+		setConfirmPasswordVisible(!confirmPasswordVisible);
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -149,7 +158,10 @@ const RegisterDialog = ({ open, loginOpen, onClose }: RegisterDialogProps) => {
 				<CloseIcon />
 			</IconButton>
 			<DialogContent>
-				<Typography variant="h4">アカウントを作成</Typography>
+				<Box sx={{ textAlign: "center" }}>
+					<Twitter sx={{ color: "#1DA1F2", fontSize: "40px" }} />
+					<Typography variant="h4">アカウントを作成</Typography>
+				</Box>
 				<Box component="form" onSubmit={handleSubmit} noValidate>
 					<TextField
 						fullWidth
@@ -176,7 +188,7 @@ const RegisterDialog = ({ open, loginOpen, onClose }: RegisterDialogProps) => {
 					/>
 					<TextField
 						fullWidth
-						type="password"
+						type={passwordVisible ? "text" : "password"}
 						id="password"
 						name="password"
 						label="パスワード"
@@ -185,10 +197,19 @@ const RegisterDialog = ({ open, loginOpen, onClose }: RegisterDialogProps) => {
 						helperText={passwordErrMsg}
 						error={passwordErrMsg !== ""}
 						disabled={loading}
+						InputProps={{
+							endAdornment: (
+								<InputAdornment position="end">
+									<IconButton edge="end" onClick={togglePasswordVisibility}>
+										{passwordVisible ? <VisibilityOff /> : <Visibility />}
+									</IconButton>
+								</InputAdornment>
+							),
+						}}
 					/>
 					<TextField
 						fullWidth
-						type="password"
+						type={confirmPasswordVisible ? "text" : "password"}
 						id="confirmPassword"
 						name="confirmPassword"
 						label="確認用パスワード"
@@ -197,6 +218,22 @@ const RegisterDialog = ({ open, loginOpen, onClose }: RegisterDialogProps) => {
 						helperText={confirmPasswordErrMsg}
 						error={confirmPasswordErrMsg !== ""}
 						disabled={loading}
+						InputProps={{
+							endAdornment: (
+								<InputAdornment position="end">
+									<IconButton
+										edge="end"
+										onClick={toggleConfirmPasswordVisibility}
+									>
+										{confirmPasswordVisible ? (
+											<VisibilityOff />
+										) : (
+											<Visibility />
+										)}
+									</IconButton>
+								</InputAdornment>
+							),
+						}}
 					/>
 					<LoadingButton
 						type="submit"
