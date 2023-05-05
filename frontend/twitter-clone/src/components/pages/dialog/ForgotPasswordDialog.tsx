@@ -178,9 +178,10 @@ const ForgotPasswordDialog = ({ open, onClose }: ForgotPasswordDialogProps) => {
 			console.log(err);
 			const errors = err.data.errors;
 			console.log(errors);
-
 			setLoading(false);
 			onCloseWithExtraFunc();
+		} finally {
+			localStorage.removeItem("user");
 		}
 	};
 
