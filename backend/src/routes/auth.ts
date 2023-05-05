@@ -1,5 +1,10 @@
 import express from "express";
-import { login, register, resetPassword } from "../services/userService";
+import {
+	forgotPassword,
+	login,
+	register,
+	resetPassword,
+} from "../services/userService";
 import {
 	printErrors,
 	validConfirmPasswordLength,
@@ -52,6 +57,16 @@ router.post(
 	verifyToken,
 	(req: express.Request, res: express.Response) => {
 		return res.status(200).json({ user: req.user });
+	}
+);
+
+// パスワード忘れリクエストAPIの呼出
+router.post(
+	"/forgotPassword",
+	validUsernameOrEmail,
+	printErrors,
+	(req: express.Request, res: express.Response) => {
+		forgotPassword(req, res);
 	}
 );
 
