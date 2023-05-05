@@ -8,8 +8,8 @@ import {
 import User from "../../models/User";
 
 export const validUsernameLength = body("username")
-	.isLength({ min: 8 })
-	.withMessage("ユーザー名は8文字以上で入力してください");
+	.isLength({ min: 4 })
+	.withMessage("ユーザー名は4文字以上で入力してください");
 
 export const validUsernameFormat = body("username")
 	.matches(/^@[\w]+$/)
@@ -64,8 +64,8 @@ export const validUsernameOrEmail = oneOf([
 		body("username")
 			.exists()
 			.withMessage("ユーザー名またはメールアドレスを入力してください")
-			.isLength({ min: 8 })
-			.withMessage("ユーザー名は8文字以上で入力してください"),
+			.isLength({ min: 4 })
+			.withMessage("ユーザー名は4文字以上で入力してください"),
 	],
 	[
 		body("username")
