@@ -60,7 +60,7 @@ const EditProfileDialog = ({ open, onClose }: EditProfileDialogProps) => {
 				</Box>
 			</Box>
 			<DialogContent sx={{ width: "600px" }}>
-				<Box sx={{ mb: 3, textAlign: "center" }}>
+				<Box component="form" sx={{ mb: 3 }}>
 					<Box
 						sx={{
 							bgcolor: "red",
@@ -118,11 +118,7 @@ const EditProfileDialog = ({ open, onClose }: EditProfileDialogProps) => {
 							</Tooltip>
 						</Avatar>
 					</Box>
-					<Box
-						component="form"
-						noValidate
-						sx={{ mt: 4, ml: 1, textAlign: "left" }}
-					>
+					<Box sx={{ mt: 4, ml: 1, textAlign: "left" }}>
 						<TextField
 							fullWidth
 							id="profileName"
