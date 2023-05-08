@@ -30,10 +30,7 @@ const router = express.Router();
 const storage = multer.diskStorage({
 	destination: (req, file, cb) => {
 		// 画像がuploadされるパス
-		const uploadPath = path.resolve(
-			__dirname,
-			"../../../frontend/twitter-clone/public"
-		);
+		const uploadPath = path.resolve(__dirname, "../uploads");
 
 		// uploadPathにディレクトリが存在するかどうかを確認
 		if (!fs.existsSync(uploadPath)) {

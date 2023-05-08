@@ -5,11 +5,11 @@ import path from "path";
 const cors = require("cors");
 
 const app = express();
+app.use("/uploads", express.static(path.join(__dirname, "./uploads/")));
 
 app.use(cors({ origin: "*" }));
 const PORT = 4000;
 const url = process.env.MONGODB_URL as string;
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use(express.json());
 
 // エンドポイント
