@@ -18,7 +18,6 @@ const Profile = () => {
 	const { user } = useUserContext();
 	const [tabValue, setTabValue] = useState<number>(0);
 	const [open, setOpen] = useState<boolean>(false);
-
 	const handleTabChange = (e: React.ChangeEvent<any>, newValue: number) =>
 		setTabValue(newValue);
 
@@ -49,14 +48,14 @@ const Profile = () => {
 				<Box sx={{ mt: 2, mb: 3, textAlign: "center" }}>
 					<Box
 						sx={{
-							bgcolor: "red",
+							backgroundImage: `url(${user?.profileImg})`,
 							width: "100%",
 							height: "150px",
 							position: "relative",
 						}}
 					>
 						<Avatar
-							src={user?.icon || ""}
+							src={user?.icon}
 							alt={user?.profileName}
 							sx={{
 								width: 70,
