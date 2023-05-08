@@ -14,6 +14,8 @@ import TweetList from "./TweetList";
 import { useState } from "react";
 import EditProfileDialog from "./dialog/EditProfileDialog";
 
+const IMAGE_URL = process.env.REACT_APP_IMAGE_URL as string;
+
 const Profile = () => {
 	const { user } = useUserContext();
 	const [tabValue, setTabValue] = useState<number>(0);
@@ -48,14 +50,14 @@ const Profile = () => {
 				<Box sx={{ mt: 2, mb: 3, textAlign: "center" }}>
 					<Box
 						sx={{
-							backgroundImage: `url(${user?.profileImg})`,
+							backgroundImage: `url(${IMAGE_URL + user?.profileImg})`,
 							width: "100%",
 							height: "150px",
 							position: "relative",
 						}}
 					>
 						<Avatar
-							src={user?.icon}
+							src={IMAGE_URL + user?.icon}
 							alt={user?.profileName}
 							sx={{
 								width: 70,
@@ -88,10 +90,7 @@ const Profile = () => {
 							{user?.username}
 						</Typography>
 						<Typography mt={2} variant="body2">
-							■未経験から5ヶ月でエンジニアへ転職👨‍💻 ■自社開発2社・自社開発 + SES
-							1社内定 ■地方公務員 → 第二新卒総合職 → エンジニア
-							■Java・Ruby・JavaScript・TypeScript・SpringBoot・Rails・React
-							■ライフハックなスローライフを送りたい😌
+							{user?.description}
 						</Typography>
 					</Box>
 					<Box sx={{ display: "flex", justifyContent: "flex-start", mt: 2 }}>
