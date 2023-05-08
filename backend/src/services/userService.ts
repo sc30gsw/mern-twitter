@@ -3,6 +3,7 @@ import CryptoJS from "crypto-js";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
 import User from "../models/User";
+import fs from "fs";
 
 export const register = async (req: express.Request, res: express.Response) => {
 	// パスワード取得
@@ -81,7 +82,7 @@ export const forgotPassword = async (
 	const { username, email } = req.body;
 
 	try {
-		const user = await getUserUsernameOrEmail(username, email);
+		const user = await getUser(undefined, username, email);
 		if (!user) {
 			return res.status(400).json({
 				errors: [
@@ -95,7 +96,6 @@ export const forgotPassword = async (
 
 		return res.status(200).json({ user });
 	} catch (err) {
-		console.log(err);
 		res.status(500).json(err);
 	}
 };
@@ -106,7 +106,7 @@ export const resetPassword = async (
 ) => {
 	const { username, email, password } = req.body;
 	try {
-		const user = await getUserUsernameOrEmail(username, email);
+		const user = await getUser(undefined, username, email);
 		if (!user) {
 			return res.status(400).json({
 				errors: [
@@ -147,17 +147,93 @@ export const resetPassword = async (
 
 		return res.status(200).json({ updatedUser });
 	} catch (err) {
+		return res.status(500).json(err);
+	}
+};
+
+export const updateUser = async (
+	req: express.Request,
+	res: express.Response
+) => {
+	const { userId, profileName, description } = req.body;
+	try {
+		if (!userId) {
+			return res.status(401).json({
+				errors: [
+					{
+						param: "userId",
+						msg: "無効なリクエストです",
+					},
+				],
+			});
+		}
+
+		const user = await getUser(userId, undefined, undefined);
+
+		if (!user) {
+			return res.status(404).json({
+				errors: [
+					{
+						param: "user",
+						msg: "ユーザーが存在しません",
+					},
+				],
+			});
+		}
+
+		let profileImgUrl: any = null;
+		let iconUrl: any = null;
+
+		const files: any = req.files;
+		if (files) {
+			if (files["profileImg"]) {
+				profileImgUrl = files["profileImg"][0].filename;
+			}
+
+			if (files["icon"]) {
+				iconUrl = files["icon"][0].filename;
+			}
+		}
+
+		const updatedUser = await User.findOneAndUpdate(
+			{ _id: user._id, __v: user.__v },
+			{
+				$set: {
+					profileName: profileName,
+					description: description,
+					icon: iconUrl,
+					profileImg: profileImgUrl,
+				},
+				$inc: { __v: 1 },
+			},
+			{ new: true, returnOriginal: false }
+		);
+
+		if (!updatedUser) {
+			return res.status(409).json({
+				errors: [
+					{
+						param: "version",
+						msg: "最新のデータに更新してから実行してください",
+					},
+				],
+			});
+		}
+
+		return res.status(200).json({ updatedUser });
+	} catch (err) {
 		console.log(err);
 		return res.status(500).json(err);
 	}
 };
 
-const getUserUsernameOrEmail = async (
+const getUser = async (
+	userId: string | undefined,
 	username: string | undefined,
 	email: string | undefined
 ) => {
 	const user = await User.findOne({
-		$or: [{ username: username }, { email: email }],
+		$or: [{ _id: userId }, { username: username }, { email: email }],
 	});
 
 	return user;
