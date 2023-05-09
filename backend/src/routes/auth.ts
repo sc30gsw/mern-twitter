@@ -7,7 +7,6 @@ import {
 	updateUser,
 } from "../services/userService";
 import {
-	printErrors,
 	validConfirmPasswordLength,
 	validEmailExist,
 	validEmailFormat,
@@ -21,6 +20,7 @@ import {
 } from "../services/validation/userValid";
 import verifyToken from "../middleware/tokenHandler";
 import upload from "../middleware/multerHandler";
+import { printErrors } from "../services/validation/validation";
 
 const router = express.Router();
 

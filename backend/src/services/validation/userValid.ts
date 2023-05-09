@@ -1,10 +1,4 @@
-import express, { NextFunction } from "express";
-import {
-	body,
-	oneOf,
-	ValidationChain,
-	validationResult,
-} from "express-validator";
+import { body, oneOf, ValidationChain } from "express-validator";
 import User from "../../models/User";
 
 export const validUsernameLength = body("username")
@@ -81,17 +75,3 @@ export const validUsernameOrEmail = oneOf([
 			.normalizeEmail(),
 	],
 ]);
-
-export const printErrors = (
-	req: express.Request,
-	res: express.Response,
-	next: NextFunction
-) => {
-	const errors = validationResult(req);
-	// エラーが存在する場合
-	if (!errors.isEmpty()) {
-		return res.status(400).json({ errors: errors.array() });
-	}
-	// エラーが存在しない場合
-	next();
-};
