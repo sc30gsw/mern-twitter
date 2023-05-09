@@ -29,6 +29,24 @@ const TweetBox = ({ title, rows }: TweetBoxPropsType) => {
 		}
 	};
 
+	const handleImageRemove = (imagePreview: string) => {
+		// 引数と同じimagePreviewsのindexを取得
+		const imageIndex = imagePreviews.indexOf(imagePreview);
+
+		// imagePreviewが存在する場合
+		if (imageIndex > -1) {
+			const updatedImagePreviews = [...imagePreviews];
+			// imagePreviewsから該当のimagePreviewを削除
+			updatedImagePreviews.splice(imageIndex, 1);
+			setImagePreviews(updatedImagePreviews);
+
+			const updatedImages = [...images];
+			// imagesから該当のimageを削除
+			updatedImages.splice(imageIndex, 1);
+			setImages(updatedImages);
+		}
+	};
+
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setLoading(true);
@@ -104,30 +122,41 @@ const TweetBox = ({ title, rows }: TweetBoxPropsType) => {
 						inputProps={{ maxLength: 140 }}
 					/>
 					{/* 画像プレビュー */}
-					<Box sx={{ display: "flex", flexWrap: "wrap" }}>
+					<Box sx={{ display: "flex", flexWrap: "wrap", position: "relative" }}>
 						{imagePreviews.map((imagePreview, index) => (
-							<>
+							<Box
+								key={index}
+								sx={{
+									position: "relative",
+									width: "100px",
+									height: "100px",
+									margin: "5px",
+								}}
+							>
 								<IconButton
 									sx={{
-										color: "#1DA1F2",
+										position: "absolute",
+										left: -10,
+										top: -5,
+										background: "#6f7070",
+										color: "white",
 										":hover": {
-											cursor: "pointer",
-											background: "#c2dff0",
-											borderRadius: "50%",
+											background: "#6f7070",
+											opacity: 0.7,
 										},
 									}}
+									onClick={() => handleImageRemove(imagePreview)}
 								>
 									<CloseIcon />
 								</IconButton>
 								<img
-									key={index}
 									src={imagePreview}
 									alt={`tweet_image_${index}`}
 									width="100"
 									height="100"
-									style={{ objectFit: "cover", margin: "5px" }}
+									style={{ objectFit: "cover" }}
 								/>
-							</>
+							</Box>
 						))}
 					</Box>
 					<Box
@@ -141,6 +170,7 @@ const TweetBox = ({ title, rows }: TweetBoxPropsType) => {
 							<IconButton
 								component="label"
 								htmlFor="tweetImage"
+								disabled={images.length === 4}
 								sx={{
 									color: "#1DA1F2",
 									":hover": {
