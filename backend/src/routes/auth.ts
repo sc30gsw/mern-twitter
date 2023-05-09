@@ -4,9 +4,9 @@ import {
 	login,
 	register,
 	resetPassword,
+	updateUser,
 } from "../services/userService";
 import {
-	printErrors,
 	validConfirmPasswordLength,
 	validEmailExist,
 	validEmailFormat,
@@ -19,6 +19,8 @@ import {
 	validUsernameOrEmail,
 } from "../services/validation/userValid";
 import verifyToken from "../middleware/tokenHandler";
+import upload from "../middleware/multerHandler";
+import { printErrors } from "../services/validation/validation";
 
 const router = express.Router();
 
@@ -82,4 +84,13 @@ router.post(
 	}
 );
 
-module.exports = router;
+// ユーザー更新APIの呼出
+router.patch(
+	"/update",
+	upload.fields([{ name: "profileImg" }, { name: "icon" }]),
+	(req: express.Request, res: express.Response) => {
+		updateUser(req, res);
+	}
+);
+
+export default router;

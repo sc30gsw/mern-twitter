@@ -190,6 +190,7 @@ const RegisterDialog = ({ open, loginOpen, onClose }: RegisterDialogProps) => {
 				email: user.email,
 				icon: user.icon,
 				description: user.description,
+				profileImg: user.profileImg,
 				version: user.__v,
 			});
 

@@ -1,14 +1,15 @@
 import Sidebar from "../pages/Sidebar";
-import Home from "../pages/Home";
-import { Alert, Box, Collapse, IconButton } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { Box } from "@mui/material";
 import Widgets from "../pages/Widgets";
-import { useNavigate } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import authUtils from "../../utils/authUtils";
 
 const AppLayout = () => {
 	const navigate = useNavigate();
+
+	const isSmallScreen = useMediaQuery("(min-width:1000px)");
 
 	// ページ遷移ごとに発火
 	useEffect(() => {
@@ -16,16 +17,13 @@ const AppLayout = () => {
 		const checkAuth = async () => {
 			// 認証チェック
 			const isAuth = await authUtils.isAuthenticated();
-			if (isAuth) {
-				navigate("/");
-			} else {
+			if (!isAuth) {
 				navigate("/auth");
 			}
 		};
 		checkAuth();
 	}, [navigate]);
 
-	const user = false;
 	return (
 		<>
 			<Box
@@ -40,7 +38,7 @@ const AppLayout = () => {
 				}}
 			>
 				<Box
-					sx={{ flex: "2", borderRight: "solid 1px #d5e5f1", height: "100vh" }}
+					sx={{ flex: "1", borderRight: "solid 1px #d5e5f1", height: "100vh" }}
 				>
 					<Sidebar />
 				</Box>
@@ -51,17 +49,19 @@ const AppLayout = () => {
 						overflowY: "auto",
 					}}
 				>
-					<Home />
+					<Outlet />
 				</Box>
-				<Box
-					sx={{
-						flex: "3.5",
-						borderLeft: "solid 1px #d5e5f1",
-						height: "100vh",
-					}}
-				>
-					<Widgets />
-				</Box>
+				{isSmallScreen && (
+					<Box
+						sx={{
+							flex: "3.5",
+							borderLeft: "solid 1px #d5e5f1",
+							height: "100vh",
+						}}
+					>
+						<Widgets />
+					</Box>
+				)}
 			</Box>
 		</>
 	);

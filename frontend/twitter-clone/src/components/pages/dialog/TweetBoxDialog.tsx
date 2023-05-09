@@ -15,8 +15,8 @@ const TweetBoxDialog = ({ open, onClose }: TweetBoxDialogProps) => {
 			aria-labelledby="tweet-box-dialog"
 			sx={{
 				"& .MuiDialog-paper": {
-					width: "60%",
-					height: "30%",
+					width: "70%",
+					height: "40%",
 					position: "relative",
 					borderRadius: "30px",
 					minWidth: 320,

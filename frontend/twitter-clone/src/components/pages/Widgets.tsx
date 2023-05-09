@@ -27,7 +27,7 @@ const Widgets = () => {
 			</Box>
 			<TwitterTweetEmbed
 				tweetId={"1526317423800233984"}
-				options={{ height: "200px" }}
+				options={{ height: "100px" }}
 			/>
 			<TwitterTimelineEmbed
 				sourceType="profile"

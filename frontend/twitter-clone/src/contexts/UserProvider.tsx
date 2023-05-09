@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 type User = {
 	id: string;
@@ -6,6 +6,7 @@ type User = {
 	username: string;
 	email: string;
 	icon: string;
+	profileImg: string;
 	description: string;
 	version: number;
 };
@@ -35,10 +36,25 @@ type UserProviderProps = {
 };
 
 export const UserProvider = ({ children }: UserProviderProps) => {
-	const [user, setUser] = useState<User | undefined>(undefined);
+	const [user, _setUser] = useState<User | undefined>(undefined);
 	const [logoutEvent, setLogoutEvent] = useState<boolean>(false);
 	const [settingPasswordEvent, setSettingPasswordEvent] =
 		useState<boolean>(false);
+
+	// ユーザー情報をローカルストレージに保存する関数
+	const setUser = (user?: User) => {
+		if (user) {
+			localStorage.setItem("user", JSON.stringify(user));
+		} else {
+			localStorage.removeItem("user");
+		}
+		_setUser(user);
+	};
+
+	useEffect(() => {
+		const storedUser = localStorage.getItem("user");
+		if (storedUser) _setUser(JSON.parse(storedUser));
+	}, []);
 
 	const triggerLogoutEvent = () => {
 		setLogoutEvent(true);

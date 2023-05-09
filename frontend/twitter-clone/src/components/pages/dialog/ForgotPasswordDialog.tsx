@@ -107,6 +107,7 @@ const ForgotPasswordDialog = ({ open, onClose }: ForgotPasswordDialogProps) => {
 				email: data.email,
 				icon: data.icon,
 				description: data.description,
+				profileImg: data.profileImg,
 				version: data.__v,
 			});
 
@@ -168,6 +169,7 @@ const ForgotPasswordDialog = ({ open, onClose }: ForgotPasswordDialogProps) => {
 				email: updatedUser.email,
 				icon: updatedUser.icon,
 				description: updatedUser.description,
+				profileImg: updatedUser.profileImg,
 				version: updatedUser.__v,
 			});
 
@@ -178,9 +180,10 @@ const ForgotPasswordDialog = ({ open, onClose }: ForgotPasswordDialogProps) => {
 			console.log(err);
 			const errors = err.data.errors;
 			console.log(errors);
-
 			setLoading(false);
 			onCloseWithExtraFunc();
+		} finally {
+			localStorage.removeItem("user");
 		}
 	};
 

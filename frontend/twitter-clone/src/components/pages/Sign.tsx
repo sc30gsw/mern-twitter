@@ -1,19 +1,24 @@
 import {
 	Avatar,
 	Box,
-	IconButton,
+	Button,
 	MenuItem,
 	MenuList,
 	Popover,
+	Typography,
 } from "@mui/material";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUserContext } from "../../contexts/UserProvider";
 
-const Sign = () => {
+type SignProps = {
+	isSmallScreen: boolean;
+};
+
+const Sign = ({ isSmallScreen }: SignProps) => {
 	const navigate = useNavigate();
+	const { user } = useUserContext();
 
 	const { setUser, triggerLogoutEvent } = useUserContext();
 
@@ -37,13 +42,19 @@ const Sign = () => {
 
 	return (
 		<>
-			<IconButton
+			<Button
 				id="sign-button"
 				aria-controls={open ? "sign-menu" : undefined}
 				aria-haspopup="true"
 				aria-expanded={open ? "true" : undefined}
 				onClick={handleClick}
-				sx={{ ":hover": { background: "#d6dfe8" } }}
+				sx={{
+					borderRadius: isSmallScreen ? "50%" : 0,
+					textTransform: "none",
+					":hover": {
+						background: "#d6dfe8",
+					},
+				}}
 			>
 				<Box
 					sx={{
@@ -54,8 +65,15 @@ const Sign = () => {
 					}}
 				>
 					<Avatar src="" alt="K" sx={{ width: "60px", height: "60px" }} />
+					{!isSmallScreen && (
+						<Typography
+							sx={{ margin: "0 5px", fontWeight: "bold", color: "#979fa7" }}
+						>
+							{user?.profileName}
+						</Typography>
+					)}
 				</Box>
-			</IconButton>
+			</Button>
 			<Popover
 				id="sign-menu"
 				anchorEl={anchorEl}
@@ -73,7 +91,7 @@ const Sign = () => {
 				<MenuList>
 					<MenuItem onClick={logout}>
 						<LogoutOutlinedIcon />
-						Log out userName
+						Logout {user?.username}
 					</MenuItem>
 				</MenuList>
 			</Popover>

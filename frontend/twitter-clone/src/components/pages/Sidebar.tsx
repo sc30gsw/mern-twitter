@@ -1,6 +1,11 @@
 import { Home, Notifications, Search, Twitter } from "@mui/icons-material";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
+import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import EmailIcon from "@mui/icons-material/Email";
+import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import PersonIcon from "@mui/icons-material/Person";
+import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import {
 	Badge,
@@ -15,10 +20,13 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import Sign from "./Sign";
 import { useState } from "react";
 import TweetBoxDialog from "./dialog/TweetBoxDialog";
+import { useUserContext } from "../../contexts/UserProvider";
 
 const Sidebar = () => {
 	// 現在のルートを取得
 	const location = useLocation();
+
+	const { user } = useUserContext();
 
 	const [openDialog, setOpenDialog] = useState<boolean>(false);
 
@@ -80,7 +88,6 @@ const Sidebar = () => {
 					height: "90vh",
 					mt: "10px",
 					ml: "5px",
-					mr: "10px",
 					display: "flex",
 					flexDirection: "column",
 				}}
@@ -98,70 +105,112 @@ const Sidebar = () => {
 				</Link>
 				<Link to="/" style={{ marginTop: "10px" }}>
 					{renderButtonWithTooltip(
-						<Home sx={{ color: "#14171A", fontSize: "40px" }} />,
+						location.pathname === "/" ? (
+							<Home sx={{ color: "#14171A", fontSize: "40px" }} />
+						) : (
+							<HomeOutlinedIcon sx={{ color: "#14171A", fontSize: "40px" }} />
+						),
 						"ホーム",
 						location.pathname === "/"
 					)}
 				</Link>
-				<Link to="/" style={{ marginTop: "10px" }}>
-					{renderButtonWithTooltip(
-						<Search sx={{ color: "#14171A", fontSize: "40px" }} />,
-						"検索"
-					)}
-				</Link>
-				<Link to="/" style={{ marginTop: "10px" }}>
-					{renderButtonWithTooltip(
-						<Notifications sx={{ color: "#14171A", fontSize: "40px" }} />,
-						"通知"
-					)}
-				</Link>
-				<Link to="/" style={{ marginTop: "10px" }}>
-					{renderButtonWithTooltip(
-						<EmailIcon sx={{ color: "#14171A", fontSize: "40px" }} />,
-						"メッセージ"
-					)}
-				</Link>
-				<Link to="/" style={{ marginTop: "10px" }}>
-					{renderButtonWithTooltip(
-						<PersonIcon sx={{ color: "#14171A", fontSize: "40px" }} />,
-						"プロフィール"
-					)}
-				</Link>
-				{isSmallScreen ? (
-					<Tooltip title="Tweet" enterDelay={800}>
-						<Box sx={{ marginTop: "10px" }}>
-							<IconButton
-								color="primary"
-								size="large"
+				{user && (
+					<>
+						<Link to="/" style={{ marginTop: "10px" }}>
+							{renderButtonWithTooltip(
+								location.pathname === "/search" ? (
+									<Search sx={{ color: "#14171A", fontSize: "40px" }} />
+								) : (
+									<SearchOutlinedIcon
+										sx={{ color: "#14171A", fontSize: "40px" }}
+									/>
+								),
+								"検索",
+								location.pathname === "/search"
+							)}
+						</Link>
+						<Link to="/" style={{ marginTop: "10px" }}>
+							{renderButtonWithTooltip(
+								location.pathname === "/notice" ? (
+									<Notifications sx={{ color: "#14171A", fontSize: "40px" }} />
+								) : (
+									<NotificationsNoneOutlinedIcon
+										sx={{ color: "#14171A", fontSize: "40px" }}
+									/>
+								),
+								"通知",
+								location.pathname === "/notice"
+							)}
+						</Link>
+						<Link to="/" style={{ marginTop: "10px" }}>
+							{renderButtonWithTooltip(
+								location.pathname === "/message" ? (
+									<EmailIcon sx={{ color: "#14171A", fontSize: "40px" }} />
+								) : (
+									<EmailOutlinedIcon
+										sx={{ color: "#14171A", fontSize: "40px" }}
+									/>
+								),
+								"メッセージ",
+								location.pathname === "/message"
+							)}
+						</Link>
+						<Link
+							to={`/${user.username.split("@").join("")}`}
+							style={{ marginTop: "10px" }}
+						>
+							{renderButtonWithTooltip(
+								location.pathname ===
+									`/${user.username.split("@").join("")}` ? (
+									<PersonIcon sx={{ color: "#14171A", fontSize: "40px" }} />
+								) : (
+									<PersonOutlineOutlinedIcon
+										sx={{ color: "#14171A", fontSize: "40px" }}
+									/>
+								),
+								"プロフィール",
+								location.pathname === `/${user.username.split("@").join("")}`
+							)}
+						</Link>
+						{isSmallScreen ? (
+							<Tooltip title="Tweet" enterDelay={800}>
+								<Box sx={{ marginTop: "10px" }}>
+									<IconButton
+										color="primary"
+										size="large"
+										sx={{
+											padding: "10px",
+											margin: "0 10px",
+										}}
+										onClick={handleOpenDialog}
+									>
+										<AddCircleOutlineIcon
+											sx={{ width: "40px", height: "40px" }}
+										/>
+									</IconButton>
+								</Box>
+							</Tooltip>
+						) : (
+							<Button
 								sx={{
-									padding: "10px",
-									margin: "0 10px",
+									margin: "10px 5px",
+									padding: "10px 20px",
+									borderRadius: "40px",
+									textTransform: "none",
+									fontSize: "18px",
+									background: "#1DA1F2",
+									color: "#fff",
+									":hover": { background: "#1da0f29c" },
 								}}
 								onClick={handleOpenDialog}
 							>
-								<AddCircleOutlineIcon sx={{ width: "40px", height: "40px" }} />
-							</IconButton>
-						</Box>
-					</Tooltip>
-				) : (
-					<Button
-						sx={{
-							margin: "10px 5px",
-							padding: "10px 20px",
-							borderRadius: "40px",
-							textTransform: "none",
-							fontSize: "18px",
-							background: "#1DA1F2",
-							color: "#fff",
-							":hover": { background: "#1da0f29c" },
-						}}
-						onClick={handleOpenDialog}
-					>
-						Tweet
-					</Button>
+								Tweet
+							</Button>
+						)}
+					</>
 				)}
 			</Box>
-			<Sign />
+			{user && <Sign isSmallScreen={isSmallScreen} />}
 			<TweetBoxDialog open={openDialog} onClose={handleCloseDialog} />
 		</>
 	);
