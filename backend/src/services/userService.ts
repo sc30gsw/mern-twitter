@@ -3,7 +3,6 @@ import CryptoJS from "crypto-js";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
 import User from "../models/User";
-import fs from "fs";
 
 export const register = async (req: express.Request, res: express.Response) => {
 	// パスワード取得
