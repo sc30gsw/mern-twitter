@@ -4,26 +4,36 @@ const BASE_URL = process.env.REACT_APP_BASE_URL as string;
 
 const getToken = () => localStorage.getItem("token");
 
-export const axiosClient = axios.create({
-	baseURL: BASE_URL,
-});
-
-axiosClient.interceptors.request.use(async (config: any) => {
-	const token = await getToken();
-	return {
+const createInstance = (config = {}) => {
+	const instance = axios.create({
+		baseURL: BASE_URL,
 		...config,
-		headers: {
-			"Content-Type": "application/json",
-			authorization: `Bearer ${token}`,
-		},
-	};
-});
+	});
 
-axiosClient.interceptors.response.use(
-	(response) => {
-		return response;
-	},
-	(err) => {
-		throw err.response;
-	}
-);
+	instance.interceptors.request.use(async (conf: any) => {
+		const token = await getToken();
+		return {
+			...conf,
+			headers: {
+				...conf.headers,
+				authorization: `Bearer ${token}`,
+			},
+		};
+	});
+
+	instance.interceptors.response.use(
+		(response) => {
+			return response;
+		},
+		(err) => {
+			throw err.response;
+		}
+	);
+
+	return instance;
+};
+
+export const axiosClient = createInstance();
+export const axiosClientFormData = createInstance({
+	headers: { "Content-Type": "multipart/form-data" },
+});
