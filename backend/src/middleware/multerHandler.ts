@@ -26,7 +26,6 @@ const storage = multer.diskStorage({
 const upload = multer({
 	storage,
 	fileFilter: (req, file, cb) => {
-		console.log(file.mimetype);
 		// ファイルのMIMEタイプが以下のいずれかの場合のみファイルアップロードを許可
 		if (
 			["video/mp4", "image/png", "image/jpeg", "audio/mpeg"].includes(
