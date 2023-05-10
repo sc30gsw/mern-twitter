@@ -1,6 +1,6 @@
 import { Box, InputBase } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import { TwitterTweetEmbed, TwitterTimelineEmbed } from "react-twitter-embed";
+import { TwitterTimelineEmbed } from "react-twitter-embed";
 
 const Widgets = () => {
 	return (
@@ -13,6 +13,7 @@ const Widgets = () => {
 					backgroundColor: "#EBEEF0",
 					width: "100%",
 					paddingLeft: "10px",
+					mb: "20px",
 				}}
 			>
 				<SearchIcon color="action" />
@@ -25,14 +26,10 @@ const Widgets = () => {
 					}}
 				/>
 			</Box>
-			<TwitterTweetEmbed
-				tweetId={"1526317423800233984"}
-				options={{ height: "100px" }}
-			/>
 			<TwitterTimelineEmbed
 				sourceType="profile"
 				screenName="cu30rry_"
-				options={{ height: "300px" }}
+				options={{ height: "700px" }}
 			/>
 		</Box>
 	);
