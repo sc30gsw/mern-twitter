@@ -1,4 +1,4 @@
-import { axiosClientFormData } from "./axiosClient";
+import { axiosClient, axiosClientFormData } from "./axiosClient";
 
 const tweetApi = {
 	create: (formData: FormData) =>
@@ -7,6 +7,7 @@ const tweetApi = {
 				"Content-Type": "multipart/form-data",
 			},
 		}),
+	search: (content?: string) => axiosClient.post("tweet/search", { content }),
 };
 
 export default tweetApi;

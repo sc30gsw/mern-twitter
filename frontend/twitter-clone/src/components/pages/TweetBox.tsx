@@ -6,6 +6,10 @@ import React, { useState } from "react";
 import { LoadingButton } from "@mui/lab";
 import CloseIcon from "@mui/icons-material/Close";
 import tweetApi from "../../api/tweetApi";
+import { useUserContext } from "../../contexts/UserProvider";
+import { useTweetContext } from "../../contexts/TweetProvider";
+
+const IMAGE_URL = process.env.REACT_APP_IMAGE_URL as string;
 
 type TweetBoxPropsType = {
 	title: string | undefined;
@@ -13,6 +17,8 @@ type TweetBoxPropsType = {
 };
 
 const TweetBox = ({ title, rows }: TweetBoxPropsType) => {
+	const { user } = useUserContext();
+	const { setTweets } = useTweetContext();
 	const [loading, setLoading] = useState<boolean>(false);
 	const [tweet, setTweet] = useState<string>("");
 	const [tweetErrMsg, setTweetErrMsg] = useState<string>("");
@@ -81,11 +87,14 @@ const TweetBox = ({ title, rows }: TweetBoxPropsType) => {
 		try {
 			await tweetApi.create(formData);
 
-			setLoading(false);
 			console.log("ツイート登録に成功しました");
+			setLoading(false);
 			setImagePreviews([]);
 			setImages([]);
 			setTweet("");
+
+			const res = await tweetApi.search();
+			setTweets(res.data);
 		} catch (err: any) {
 			const errors = err.data.errors;
 			console.log(errors);
@@ -103,7 +112,11 @@ const TweetBox = ({ title, rows }: TweetBoxPropsType) => {
 				onSubmit={handleSubmit}
 				sx={{ display: "flex", mr: "10px", maxWidth: 500 }}
 			>
-				<Avatar src={noAvatar} alt="noAvatar" sx={{ mt: "20px" }} />
+				<Avatar
+					src={user?.icon ? IMAGE_URL + user?.icon : noAvatar}
+					alt="noAvatar"
+					sx={{ mt: "30px", mr: "10px" }}
+				/>
 				<Box sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
 					<TextField
 						fullWidth
