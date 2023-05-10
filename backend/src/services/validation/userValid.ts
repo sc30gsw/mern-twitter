@@ -6,6 +6,7 @@ export const validUsernameLength = body("username")
 	.withMessage("ユーザー名は4文字以上で入力してください");
 
 export const validUsernameFormat = body("username")
+	.optional()
 	.matches(/^@[\w]+$/)
 	.withMessage("ユーザー名は@で始まり、半角英数字のみで入力してください");
 
