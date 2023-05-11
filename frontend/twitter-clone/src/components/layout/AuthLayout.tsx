@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import Sidebar from "../pages/Sidebar";
-import Home from "../pages/Home";
 import AccountButtonArea from "../pages/AccountButtonArea";
+import { Outlet } from "react-router-dom";
 
 const AuthLayout = () => {
 	return (
@@ -28,7 +28,7 @@ const AuthLayout = () => {
 					overflowY: "auto",
 				}}
 			>
-				<Home />
+				<Outlet />
 			</Box>
 			<Box
 				sx={{

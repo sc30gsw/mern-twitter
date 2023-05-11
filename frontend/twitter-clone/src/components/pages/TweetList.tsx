@@ -5,127 +5,164 @@ import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
 import Avatar from "@mui/material/Avatar";
 import { Link } from "react-router-dom";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import { Tweet } from "../../types/Tweet";
+import { styled } from "@mui/system";
+import tweetApi from "../../api/tweetApi";
+import { useTweetContext } from "../../contexts/TweetProvider";
 
-const TweetList = () => {
+const IMAGE_URL = process.env.REACT_APP_IMAGE_URL as string;
+
+interface ITweetImage {
+	imageCount: number;
+}
+
+const TweetImage = styled("img")<ITweetImage>(({ theme, imageCount }) => ({
+	objectFit: "cover",
+	borderRadius: theme.shape.borderRadius,
+	marginTop: theme.spacing(1),
+	marginBottom: theme.spacing(1),
+	marginRight: theme.spacing(0.5),
+	...getImageStyle(imageCount),
+}));
+
+const getImageStyle = (imageCount: number) => {
+	switch (imageCount) {
+		case 1:
+			return {
+				width: "100%",
+				height: "auto",
+			};
+		case 2:
+		case 3:
+		case 4:
+			return {
+				width: "calc(50% - 4px)", // 4px はマージンを考慮した値です
+				height: "auto",
+			};
+		default:
+			return {};
+	}
+};
+
+type TweetListProps = {
+	tweets: Tweet[];
+};
+
+const TweetList = ({ tweets }: TweetListProps) => {
+	const { setTweets } = useTweetContext();
+	const formatDate = (updatedAt: Date) => {
+		const now = new Date();
+		const tweetDate = new Date(updatedAt);
+		const diffInSeconds = Math.floor(
+			(now.getTime() - tweetDate.getTime()) / 1000
+		);
+		const diffInMinutes = Math.floor(diffInSeconds / 60);
+		const diffInHours = Math.floor(diffInMinutes / 60);
+		const diffInDays = Math.floor(diffInHours / 24);
+
+		if (diffInDays >= 1) {
+			return `${tweetDate.toLocaleString("en", {
+				month: "short",
+			})}.${tweetDate.getDate()}`;
+		} else if (diffInHours >= 1) {
+			return `${diffInHours}h`;
+		} else if (diffInMinutes >= 1) {
+			return `${diffInMinutes}m`;
+		} else {
+			return `${diffInSeconds}s`;
+		}
+	};
+
+	const handleRefresh = async () => {
+		const res = await tweetApi.search();
+		setTweets(res.data);
+	};
+
 	return (
 		<Box sx={{ borderTop: "solid 1px #657786" }}>
-			<List sx={{ width: "100%", bgcolor: "background.paper" }}>
-				<ListItem alignItems="flex-start">
-					<ListItemAvatar>
-						<IconButton>
-							<Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
-						</IconButton>
-					</ListItemAvatar>
-					<Box sx={{ flexGrow: 1, mt: "20px" }}>
-						<Box
-							sx={{
-								display: "flex",
-								alignItems: "center",
-								justifyContent: "space-between",
-							}}
-						>
-							<Box>
-								<Typography
-									sx={{
-										fontWeight: "bold",
-										":hover": { textDecoration: "underline" },
-									}}
-									component="span"
-									variant="body2"
-									color="text.primary"
+			<Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+				<IconButton onClick={handleRefresh}>
+					<RefreshIcon />
+				</IconButton>
+			</Box>
+			{tweets.length > 0 &&
+				tweets.map((tweet) => (
+					<List
+						key={tweet._id}
+						sx={{
+							width: "100%",
+							bgcolor: "background.paper",
+						}}
+					>
+						<ListItem alignItems="flex-start">
+							<ListItemAvatar>
+								<IconButton
+									component={Link}
+									to={`/${tweet.user.username.split("@").join("")}`}
 								>
-									<Link
-										to="/"
-										style={{ color: "black", textDecoration: "none" }}
-									>
-										UserName
-									</Link>
-								</Typography>
-								<Typography
-									sx={{ ml: "10px" }}
-									component="span"
-									variant="body2"
-									color="text.primary"
-								>
-									2023/5/4
-								</Typography>
-							</Box>
-							<Box>
-								<IconButton>
-									<MoreHorizIcon />
+									<Avatar
+										alt={tweet.user.profileName}
+										src={IMAGE_URL + tweet.user.icon}
+									/>
 								</IconButton>
+							</ListItemAvatar>
+							<Box sx={{ flexGrow: 1, mt: "20px" }}>
+								<Box
+									sx={{
+										display: "flex",
+										alignItems: "center",
+										justifyContent: "space-between",
+									}}
+								>
+									<Box sx={{ display: "flex" }}>
+										<Typography
+											sx={{
+												fontWeight: "bold",
+												":hover": { textDecoration: "underline" },
+											}}
+											component="span"
+											variant="body2"
+											color="text.primary"
+										>
+											<Link
+												to={`/${tweet.user.username.split("@").join("")}`}
+												style={{ color: "black", textDecoration: "none" }}
+											>
+												{tweet.user.profileName}
+											</Link>
+										</Typography>
+										<Typography
+											component="span"
+											variant="body2"
+											ml={"5px"}
+											sx={{
+												color: "#898989",
+											}}
+										>
+											{tweet.user.username}・{formatDate(tweet.updatedAt)}
+										</Typography>
+									</Box>
+									<Box>
+										<IconButton>
+											<MoreHorizIcon />
+										</IconButton>
+									</Box>
+								</Box>
+								<Typography>{tweet.content}</Typography>
+								{tweet.tweetImage.map((image, index) => (
+									<TweetImage
+										key={image + index}
+										src={IMAGE_URL + image}
+										alt={image}
+										imageCount={tweet.tweetImage.length}
+									/>
+								))}
 							</Box>
-						</Box>
-						<Typography>
-							ChatGPTを子供が使うデメリットを具体的に提示出来ないのに禁止しようとする。12歳という年齢を選んだ理由も無し。
-							新技術を調べもせずに「わからないから不安。だから禁止」
-							根拠無く子供に制限を加えようとする暴論を批判せずに受け入れる社会に未来は無いかなぁ、、と
-						</Typography>
-					</Box>
-				</ListItem>
-				<Divider variant="inset" component="li" />
-				<ListItem alignItems="flex-start">
-					<ListItemAvatar>
-						<Avatar alt="Emy Sharp" src="/static/images/avatar/1.jpg" />
-					</ListItemAvatar>
-					<Box sx={{ flexGrow: 1 }}>
-						<Box sx={{ display: "flex", alignItems: "center" }}>
-							<Typography
-								sx={{ fontWeight: "bold" }}
-								component="span"
-								variant="body2"
-								color="text.primary"
-							>
-								UserName
-							</Typography>
-							<Typography
-								sx={{ ml: "10px" }}
-								component="span"
-								variant="body2"
-								color="text.primary"
-							>
-								2023/5/4
-							</Typography>
-						</Box>
-						<Typography>
-							ChatGPTを子供が使うデメリットを具体的に提示出来ないのに禁止しようとする。12歳という年齢を選んだ理由も無し。
-							新技術を調べもせずに「わからないから不安。だから禁止」
-							根拠無く子供に制限を加えようとする暴論を批判せずに受け入れる社会に未来は無いかなぁ、、と
-						</Typography>
-					</Box>
-				</ListItem>
-				<Divider variant="inset" component="li" />
-				<ListItem alignItems="flex-start">
-					<ListItemAvatar>
-						<Avatar alt="Nemy Sharp" src="/static/images/avatar/1.jpg" />
-					</ListItemAvatar>
-					<Box sx={{ flexGrow: 1 }}>
-						<Box sx={{ display: "flex", alignItems: "center" }}>
-							<Typography
-								sx={{ fontWeight: "bold" }}
-								component="span"
-								variant="body2"
-								color="text.primary"
-							>
-								UserName
-							</Typography>
-							<Typography
-								sx={{ ml: "10px" }}
-								component="span"
-								variant="body2"
-								color="text.primary"
-							>
-								2023/5/4
-							</Typography>
-						</Box>
-						<Typography>
-							ChatGPTを子供が使うデメリットを具体的に提示出来ないのに禁止しようとする。12歳という年齢を選んだ理由も無し。
-							新技術を調べもせずに「わからないから不安。だから禁止」
-							根拠無く子供に制限を加えようとする暴論を批判せずに受け入れる社会に未来は無いかなぁ、、と
-						</Typography>
-					</Box>
-				</ListItem>
-			</List>
+						</ListItem>
+						<Divider variant="inset" component="li" />
+					</List>
+				))}
 		</Box>
 	);
 };

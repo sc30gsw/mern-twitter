@@ -11,6 +11,9 @@ import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUserContext } from "../../contexts/UserProvider";
+import noAvatar from "../../assets/images/noAvatar.png";
+
+const IMAGE_URL = process.env.REACT_APP_IMAGE_URL as string;
 
 type SignProps = {
 	isSmallScreen: boolean;
@@ -64,7 +67,11 @@ const Sign = ({ isSmallScreen }: SignProps) => {
 						justifyContent: "center",
 					}}
 				>
-					<Avatar src="" alt="K" sx={{ width: "60px", height: "60px" }} />
+					<Avatar
+						src={user?.icon ? IMAGE_URL + user?.icon : noAvatar}
+						alt="NoIcon"
+						sx={{ width: "60px", height: "60px" }}
+					/>
 					{!isSmallScreen && (
 						<Typography
 							sx={{ margin: "0 5px", fontWeight: "bold", color: "#979fa7" }}

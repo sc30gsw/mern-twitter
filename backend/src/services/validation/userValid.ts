@@ -1,3 +1,4 @@
+import express from "express";
 import { body, oneOf, ValidationChain } from "express-validator";
 import User from "../../models/User";
 
@@ -6,6 +7,7 @@ export const validUsernameLength = body("username")
 	.withMessage("ユーザー名は4文字以上で入力してください");
 
 export const validUsernameFormat = body("username")
+	.optional()
 	.matches(/^@[\w]+$/)
 	.withMessage("ユーザー名は@で始まり、半角英数字のみで入力してください");
 
@@ -35,14 +37,41 @@ export const validUsernameExist: ValidationChain = body("username").custom(
 	}
 );
 
-export const validEmailExist: ValidationChain = body("email").custom(
-	async (value: string) => {
-		const user = await User.findOne({ email: value });
-		if (user) {
-			throw new Error("このメールアドレスはすでに使われています");
+export const validEmailExist = async (
+	req: express.Request,
+	res: express.Response
+) => {
+	try {
+		const { email } = req.body;
+		if (!email) {
+			return res.status(401).json({
+				errors: [
+					{
+						param: "email",
+						msg: "無効なリクエストです",
+					},
+				],
+			});
 		}
+
+		const user = await User.findOne({ email: email });
+
+		if (user) {
+			return res.status(400).json({
+				errors: [
+					{
+						param: "email",
+						msg: "このメールアドレスはすでに使われています",
+					},
+				],
+			});
+		}
+
+		return res.status(200).json({ msg: "メールアドレスは使用可能です" });
+	} catch (err) {
+		return res.status(500).json(err);
 	}
-);
+};
 
 export const validPasswordMatches = body("confirmPassword").custom(
 	(value, { req }) => {

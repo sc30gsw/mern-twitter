@@ -1,14 +1,14 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
 type User = {
-	id: string;
+	_id: string;
 	profileName: string;
 	username: string;
 	email: string;
 	icon: string;
 	profileImg: string;
 	description: string;
-	version: number;
+	__v: number;
 };
 
 type UserContextValue = {
