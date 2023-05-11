@@ -1,7 +1,9 @@
 import express from "express";
 import CryptoJS from "crypto-js";
+import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
+import sgMail from "@sendgrid/mail";
 import User from "../models/User";
 
 export const register = async (req: express.Request, res: express.Response) => {
@@ -79,7 +81,6 @@ export const forgotPassword = async (
 	res: express.Response
 ) => {
 	const { username, email } = req.body;
-
 	try {
 		const user = await getUser(undefined, username, email);
 		if (!user) {
@@ -93,9 +94,30 @@ export const forgotPassword = async (
 			});
 		}
 
+		// リセットトークンと有効期限の生成
+		const resetToken = crypto.randomBytes(32).toString("hex");
+		const resetExpires = Date.now() + 600000; // 10分後
+
+		// ユーザーのリセットトークンと有効期限を更新
+		user.resetPasswordToken = resetToken;
+		user.resetPasswordExpires = resetExpires;
+
+		await user.save();
+
+		sgMail.setApiKey(process.env.SENDGRID_API_KEY as string);
+
+		const msg = {
+			to: user.email,
+			from: "admin-email@example.com",
+			subject: "パスワードを再設定リンク送信",
+			text: `リンクをクリックし、パスワードをリセットしてください\nhttp://localhost:3000/auth/reset/${resetToken}`,
+		};
+
+		await sgMail.send(msg);
+
 		return res.status(200).json({ user });
 	} catch (err) {
-		res.status(500).json(err);
+		return res.status(500).json(err);
 	}
 };
 
@@ -103,20 +125,23 @@ export const resetPassword = async (
 	req: express.Request,
 	res: express.Response
 ) => {
-	const { username, email, password } = req.body;
+	const { resetToken, password } = req.body;
 	try {
-		const user = await getUser(undefined, username, email);
+		const user = await User.findOne({
+			resetPasswordToken: resetToken,
+			resetPasswordExpires: { $gt: Date.now() },
+		});
+
 		if (!user) {
 			return res.status(400).json({
 				errors: [
 					{
-						param: "usernameOrEmail",
-						msg: "この名前またはメールアドレスのユーザーは存在しません。",
+						param: "resetToken",
+						msg: "無効なトークンまたはトークンが期限切れです。",
 					},
 				],
 			});
 		}
-
 		// パスワードの暗号化
 		req.body.password = CryptoJS.AES.encrypt(
 			password,
@@ -127,7 +152,11 @@ export const resetPassword = async (
 		const updatedUser = await User.findOneAndUpdate(
 			{ _id: user._id, __v: user.__v },
 			{
-				$set: { password: req.body.password },
+				$set: {
+					password: req.body.password,
+					resetPasswordToken: null,
+					resetPasswordExpires: null,
+				},
 				$inc: { __v: 1 },
 			},
 			{ new: true, returnOriginal: false }
@@ -221,7 +250,6 @@ export const updateUser = async (
 
 		return res.status(200).json({ updatedUser });
 	} catch (err) {
-		console.log(err);
 		return res.status(500).json(err);
 	}
 };
