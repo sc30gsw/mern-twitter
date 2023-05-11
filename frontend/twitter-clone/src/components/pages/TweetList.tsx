@@ -8,8 +8,8 @@ import { Link } from "react-router-dom";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { Tweet } from "../../types/Tweet";
 import { styled } from "@mui/system";
-import { useTweetContext } from "../../contexts/TweetProvider";
 import tweetApi from "../../api/tweetApi";
+import { useTweetContext } from "../../contexts/TweetProvider";
 
 const IMAGE_URL = process.env.REACT_APP_IMAGE_URL as string;
 
@@ -86,79 +86,83 @@ const TweetList = ({ tweets }: TweetListProps) => {
 					<RefreshIcon />
 				</IconButton>
 			</Box>
-			{tweets.map((tweet) => (
-				<List
-					key={tweet._id}
-					sx={{
-						width: "100%",
-						bgcolor: "background.paper",
-					}}
-				>
-					<ListItem alignItems="flex-start">
-						<ListItemAvatar>
-							<IconButton>
-								<Avatar
-									alt={tweet.user.profileName}
-									src={IMAGE_URL + tweet.user.icon}
-								/>
-							</IconButton>
-						</ListItemAvatar>
-						<Box sx={{ flexGrow: 1, mt: "20px" }}>
-							<Box
-								sx={{
-									display: "flex",
-									alignItems: "center",
-									justifyContent: "space-between",
-								}}
-							>
-								<Box sx={{ display: "flex" }}>
-									<Typography
-										sx={{
-											fontWeight: "bold",
-											":hover": { textDecoration: "underline" },
-										}}
-										component="span"
-										variant="body2"
-										color="text.primary"
-									>
-										<Link
-											to="/"
-											style={{ color: "black", textDecoration: "none" }}
+			{tweets.length > 0 &&
+				tweets.map((tweet) => (
+					<List
+						key={tweet._id}
+						sx={{
+							width: "100%",
+							bgcolor: "background.paper",
+						}}
+					>
+						<ListItem alignItems="flex-start">
+							<ListItemAvatar>
+								<IconButton
+									component={Link}
+									to={`/${tweet.user.username.split("@").join("")}`}
+								>
+									<Avatar
+										alt={tweet.user.profileName}
+										src={IMAGE_URL + tweet.user.icon}
+									/>
+								</IconButton>
+							</ListItemAvatar>
+							<Box sx={{ flexGrow: 1, mt: "20px" }}>
+								<Box
+									sx={{
+										display: "flex",
+										alignItems: "center",
+										justifyContent: "space-between",
+									}}
+								>
+									<Box sx={{ display: "flex" }}>
+										<Typography
+											sx={{
+												fontWeight: "bold",
+												":hover": { textDecoration: "underline" },
+											}}
+											component="span"
+											variant="body2"
+											color="text.primary"
 										>
-											{tweet.user.profileName}
-										</Link>
-									</Typography>
-									<Typography
-										component="span"
-										variant="body2"
-										ml={"5px"}
-										sx={{
-											color: "#898989",
-										}}
-									>
-										{tweet.user.username}・{formatDate(tweet.updatedAt)}
-									</Typography>
+											<Link
+												to={`/${tweet.user.username.split("@").join("")}`}
+												style={{ color: "black", textDecoration: "none" }}
+											>
+												{tweet.user.profileName}
+											</Link>
+										</Typography>
+										<Typography
+											component="span"
+											variant="body2"
+											ml={"5px"}
+											sx={{
+												color: "#898989",
+											}}
+										>
+											{tweet.user.username}・{formatDate(tweet.updatedAt)}
+										</Typography>
+									</Box>
+									<Box>
+										<IconButton>
+											<MoreHorizIcon />
+										</IconButton>
+									</Box>
 								</Box>
-								<Box>
-									<IconButton>
-										<MoreHorizIcon />
-									</IconButton>
-								</Box>
+								<Typography>{tweet.content}</Typography>
+								{tweet.tweetImage.map((image, index) => (
+									<TweetImage
+										key={image + index}
+										src={IMAGE_URL + image}
+										alt={image}
+										imageCount={tweet.tweetImage.length}
+									/>
+								))}
 							</Box>
-							<Typography>{tweet.content}</Typography>
-							{tweet.tweetImage.map((image, index) => (
-								<TweetImage
-									key={image + index}
-									src={IMAGE_URL + image}
-									alt={image}
-									imageCount={tweet.tweetImage.length}
-								/>
-							))}
-						</Box>
-					</ListItem>
-					<Divider variant="inset" component="li" />
-				</List>
-			))}
+						</ListItem>
+						<Divider variant="inset" component="li" />
+					</List>
+				))}
 		</Box>
 	);
 };

@@ -1,5 +1,9 @@
 import express from "express";
-import { create, searchTweets } from "../services/tweetService";
+import {
+	create,
+	searchTweets,
+	searchUserTweets,
+} from "../services/tweetService";
 import verifyToken from "../middleware/tokenHandler";
 import { validContentLength } from "../services/validation/tweetValid";
 import { printErrors } from "../services/validation/validation";
@@ -23,5 +27,14 @@ router.post(
 router.post("/search", (req: express.Request, res: express.Response) => {
 	searchTweets(req, res);
 });
+
+// ユーザーツイート一覧取得APIの呼出
+router.post(
+	"/searchUserTweets",
+	verifyToken,
+	(req: express.Request, res: express.Response) => {
+		searchUserTweets(req, res);
+	}
+);
 
 export default router;

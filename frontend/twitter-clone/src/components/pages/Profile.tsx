@@ -9,22 +9,44 @@ import {
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useUserContext } from "../../contexts/UserProvider";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import TweetList from "./TweetList";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import EditProfileDialog from "./dialog/EditProfileDialog";
+import { useTweetContext } from "../../contexts/TweetProvider";
+import tweetApi from "../../api/tweetApi";
 
 const IMAGE_URL = process.env.REACT_APP_IMAGE_URL as string;
 
 const Profile = () => {
-	const { user } = useUserContext();
+	const pathname = useLocation().pathname;
+	const { tweets, setTweets } = useTweetContext();
+	const [user, setUser] = useState<any | null>(null);
 	const [tabValue, setTabValue] = useState<number>(0);
 	const [open, setOpen] = useState<boolean>(false);
+
+	useEffect(() => {
+		const getUserTweets = async () => {
+			try {
+				const username = `@${pathname.replace("/", "")}`;
+
+				const res = await tweetApi.searchUserTweets(username);
+				setUser(res.data[0].user);
+				setTweets(res.data);
+			} catch (err) {
+				console.log(err);
+			}
+		};
+
+		getUserTweets();
+	}, []);
+
 	const handleTabChange = (e: React.ChangeEvent<any>, newValue: number) =>
 		setTabValue(newValue);
 
 	const handleOpen = () => setOpen(true);
 	const handleClose = () => setOpen(false);
+
 	return (
 		<>
 			<Box
@@ -43,7 +65,7 @@ const Profile = () => {
 							{user?.profileName}
 						</Typography>
 						<Typography variant="caption" display="block">
-							3 Tweets
+							{tweets.length} Tweets
 						</Typography>
 					</Box>
 				</Box>
@@ -181,7 +203,7 @@ const Profile = () => {
 						</Tabs>
 					</Box>
 				</Box>
-				<TweetList />
+				<TweetList tweets={tweets} />
 			</Box>
 			<EditProfileDialog open={open} onClose={handleClose} />
 		</>

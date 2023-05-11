@@ -1,6 +1,5 @@
 import express from "express";
 import Tweet from "../models/Tweet";
-import User from "../models/User";
 
 export const create = async (req: express.Request, res: express.Response) => {
 	try {
@@ -60,6 +59,45 @@ export const searchTweets = async (
 		return res.status(200).json(tweets);
 	} catch (err) {
 		console.log(err);
+		return res.status(500).json(err);
+	}
+};
+
+export const searchUserTweets = async (
+	req: express.Request,
+	res: express.Response
+) => {
+	const { username } = req.body;
+	try {
+		if (!username) {
+			return res.status(401).json({
+				errors: [
+					{
+						param: "username",
+						msg: "無効なリクエストです",
+					},
+				],
+			});
+		}
+		let query: any = [
+			{
+				$lookup: {
+					from: "users",
+					localField: "userId",
+					foreignField: "_id",
+					as: "user",
+				},
+			},
+			{ $match: { "user.username": username } },
+			{ $unwind: "$user" },
+			{ $sort: { updatedAt: -1 } },
+			{ $project: { "user.password": false } },
+		];
+
+		const tweets = await Tweet.aggregate(query);
+
+		return res.status(200).json(tweets);
+	} catch (err) {
 		return res.status(500).json(err);
 	}
 };
