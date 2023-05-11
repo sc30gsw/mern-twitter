@@ -8,15 +8,17 @@ import CloseIcon from "@mui/icons-material/Close";
 import tweetApi from "../../api/tweetApi";
 import { useUserContext } from "../../contexts/UserProvider";
 import { useTweetContext } from "../../contexts/TweetProvider";
+import { Link } from "react-router-dom";
 
 const IMAGE_URL = process.env.REACT_APP_IMAGE_URL as string;
 
 type TweetBoxPropsType = {
 	title: string | undefined;
 	rows: number | undefined;
+	onClose: () => void;
 };
 
-const TweetBox = ({ title, rows }: TweetBoxPropsType) => {
+const TweetBox = ({ title, rows, onClose }: TweetBoxPropsType) => {
 	const { user } = useUserContext();
 	const { setTweets } = useTweetContext();
 	const [loading, setLoading] = useState<boolean>(false);
@@ -92,6 +94,7 @@ const TweetBox = ({ title, rows }: TweetBoxPropsType) => {
 			setImagePreviews([]);
 			setImages([]);
 			setTweet("");
+			onClose();
 
 			const res = await tweetApi.search();
 			setTweets(res.data);
@@ -112,11 +115,13 @@ const TweetBox = ({ title, rows }: TweetBoxPropsType) => {
 				onSubmit={handleSubmit}
 				sx={{ display: "flex", mr: "10px", maxWidth: 500 }}
 			>
-				<Avatar
-					src={user?.icon ? IMAGE_URL + user?.icon : noAvatar}
-					alt="noAvatar"
-					sx={{ mt: "30px", mr: "10px" }}
-				/>
+				<Link to={`/${user?.username.split("@").join("")}`}>
+					<Avatar
+						src={user?.icon ? IMAGE_URL + user?.icon : noAvatar}
+						alt="noAvatar"
+						sx={{ mt: "30px", mr: "10px" }}
+					/>
+				</Link>
 				<Box sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
 					<TextField
 						fullWidth

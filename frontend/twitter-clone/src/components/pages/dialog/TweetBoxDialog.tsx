@@ -40,7 +40,7 @@ const TweetBoxDialog = ({ open, onClose }: TweetBoxDialogProps) => {
 				<CloseIcon />
 			</IconButton>
 			<DialogContent>
-				<TweetBox title={undefined} rows={4} />
+				<TweetBox title={undefined} rows={4} onClose={onClose} />
 			</DialogContent>
 		</Dialog>
 	);
