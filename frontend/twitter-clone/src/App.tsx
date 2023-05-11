@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 import { useUserContext } from "./contexts/UserProvider";
 import Profile from "./components/pages/Profile";
 import Home from "./components/pages/Home";
+import ResetPasswordDialog from "./components/pages/dialog/ResetPasswordDialog";
 
 const App = () => {
 	const { logoutEvent, settingPasswordEvent } = useUserContext();
@@ -107,7 +108,13 @@ const App = () => {
 						<Route path="/" element={<Home />} />
 						<Route path="/:username" element={<Profile />} />
 					</Route>
-					<Route path="/auth" element={<AuthLayout />} />
+					<Route path="/auth" element={<AuthLayout />}>
+						<Route path="/auth" element={<Home />} />
+						<Route
+							path="/auth/reset/:resetToken"
+							element={<ResetPasswordDialog />}
+						/>
+					</Route>
 				</Routes>
 			</BrowserRouter>
 		</ThemeProvider>
