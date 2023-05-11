@@ -84,14 +84,14 @@ const ForgotPasswordDialog = ({ open, onClose }: ForgotPasswordDialogProps) => {
 
 			const data = res.data.user;
 			setUser({
-				id: data._id,
+				_id: data._id,
 				profileName: data.profileName,
 				username: data.username,
 				email: data.email,
 				icon: data.icon,
 				description: data.description,
 				profileImg: data.profileImg,
-				version: data.__v,
+				__v: data.__v,
 			});
 
 			setLoading(false);

@@ -87,14 +87,14 @@ const ResetPasswordDialog = () => {
 
 			const updatedUser = res.data.updatedUser;
 			setUser({
-				id: updatedUser._id,
+				_id: updatedUser._id,
 				profileName: updatedUser.profileName,
 				username: updatedUser.username,
 				email: updatedUser.email,
 				icon: updatedUser.icon,
 				description: updatedUser.description,
 				profileImg: updatedUser.profileImg,
-				version: updatedUser.__v,
+				__v: updatedUser.__v,
 			});
 
 			onCloseWithExtraFunc();

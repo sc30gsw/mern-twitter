@@ -115,14 +115,14 @@ const LoginDialog = ({ open, registerOpen, onClose }: LoginDialogProps) => {
 
 			const user = res.data.user;
 			setUser({
-				id: user._id,
+				_id: user._id,
 				profileName: user.profileName,
 				username: user.username,
 				email: user.email,
 				icon: user.icon,
 				description: user.description,
 				profileImg: user.profileImg,
-				version: user.__v,
+				__v: user.__v,
 			});
 
 			setLoading(false);

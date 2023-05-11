@@ -15,13 +15,14 @@ import { useEffect, useState } from "react";
 import EditProfileDialog from "./dialog/EditProfileDialog";
 import { useTweetContext } from "../../contexts/TweetProvider";
 import tweetApi from "../../api/tweetApi";
+import { TweetUser } from "../../types/User";
 
 const IMAGE_URL = process.env.REACT_APP_IMAGE_URL as string;
 
 const Profile = () => {
 	const pathname = useLocation().pathname;
 	const { tweets, setTweets } = useTweetContext();
-	const [user, setUser] = useState<any | null>(null);
+	const [user, setUser] = useState<TweetUser | null>(null);
 	const [tabValue, setTabValue] = useState<number>(0);
 	const [open, setOpen] = useState<boolean>(false);
 
@@ -31,8 +32,15 @@ const Profile = () => {
 				const username = `@${pathname.replace("/", "")}`;
 
 				const res = await tweetApi.searchUserTweets(username);
-				setUser(res.data[0].user);
-				setTweets(res.data);
+				console.log(res.data);
+				if (res.data.length !== 0) {
+					setUser(res.data[0].user);
+					setTweets(res.data);
+				} else {
+					const user = JSON.parse(localStorage.getItem("user") as string);
+					setUser(user);
+					setTweets([]);
+				}
 			} catch (err) {
 				console.log(err);
 			}
