@@ -15,6 +15,7 @@ export type TweetUser = {
 	email: string;
 	icon: string;
 	profileName: string;
+	description: string;
 	profileImg: string;
 	__v: number;
 };
