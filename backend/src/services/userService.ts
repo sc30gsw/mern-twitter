@@ -108,9 +108,11 @@ export const forgotPassword = async (
 
 		const msg = {
 			to: user.email,
-			from: "admin-email@example.com",
-			subject: "パスワードを再設定リンク送信",
-			text: `リンクをクリックし、パスワードをリセットしてください\nhttp://localhost:3000/auth/reset/${resetToken}`,
+			from: "info@twitter-clone.com",
+			subject: "パスワードリセットリクエスト",
+			text: `
+			パスワードをリセットしますか？\n\n${user.username} のパスワードのリセットをリクエストした場合は、以下のリンクを使用してプロセスを完了してください。\nhttp://localhost:3000/auth/reset/${resetToken}\n\nこのリクエストを行っていない場合は、このメールを無視してください\nこのメールは ${user.username} 宛てに送信されました\n\n@TwitterClone
+		`,
 		};
 
 		await sgMail.send(msg);
