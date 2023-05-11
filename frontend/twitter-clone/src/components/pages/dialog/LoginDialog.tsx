@@ -42,6 +42,12 @@ const LoginDialog = ({ open, registerOpen, onClose }: LoginDialogProps) => {
 
 	const togglePasswordVisibility = () => setPasswordVisible(!passwordVisible);
 
+	const onCloseWithExtraFunc = () => {
+		setUsernameOrEmailErrMsg("");
+		setPasswordErrMsg("");
+		onClose();
+	};
+
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setLoading(true);
@@ -146,7 +152,7 @@ const LoginDialog = ({ open, registerOpen, onClose }: LoginDialogProps) => {
 		<>
 			<Dialog
 				open={open}
-				onClose={onClose}
+				onClose={onCloseWithExtraFunc}
 				sx={{
 					"& .MuiDialog-paper": {
 						padding: "50px",
@@ -155,7 +161,7 @@ const LoginDialog = ({ open, registerOpen, onClose }: LoginDialogProps) => {
 				}}
 			>
 				<IconButton
-					onClick={onClose}
+					onClick={onCloseWithExtraFunc}
 					sx={{
 						position: "absolute",
 						top: 8,
@@ -213,7 +219,7 @@ const LoginDialog = ({ open, registerOpen, onClose }: LoginDialogProps) => {
 								},
 							}}
 							onClick={() => {
-								onClose();
+								onCloseWithExtraFunc();
 								setTimeout(() => {
 									handleForgotPasswordOpen();
 								}, 100);
@@ -254,7 +260,7 @@ const LoginDialog = ({ open, registerOpen, onClose }: LoginDialogProps) => {
 									},
 								}}
 								onClick={() => {
-									onClose();
+									onCloseWithExtraFunc();
 									setTimeout(() => {
 										registerOpen();
 									}, 100);
