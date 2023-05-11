@@ -2,28 +2,15 @@ import { Box, CircularProgress } from "@mui/material";
 import TweetBox from "./TweetBox";
 import TweetList from "./TweetList";
 import { useEffect, useState } from "react";
-import tweetApi from "../../api/tweetApi";
 import { useTweetContext } from "../../contexts/TweetProvider";
 
 const Home = () => {
-	const { tweets, setTweets } = useTweetContext();
-
+	const { tweets } = useTweetContext();
 	const [loading, setLoading] = useState<boolean>(true);
 
 	useEffect(() => {
-		const getTweets = async () => {
-			try {
-				const res = await tweetApi.search();
-				setTweets(res.data);
-				setLoading(false);
-			} catch (err: any) {
-				const errors = err.data.errors;
-				console.log(errors);
-				setLoading(false);
-			}
-		};
-		getTweets();
-	}, []);
+		setLoading(false);
+	}, [tweets]);
 
 	return (
 		<Box sx={{ height: "100vh", margin: "10px 10px 0", maxWidth: 500 }}>
@@ -40,7 +27,7 @@ const Home = () => {
 				</Box>
 			) : (
 				<>
-					<TweetBox title={"ホーム"} rows={undefined} />
+					<TweetBox title={"ホーム"} rows={undefined} onClose={() => {}} />
 					<TweetList tweets={tweets} />
 				</>
 			)}
