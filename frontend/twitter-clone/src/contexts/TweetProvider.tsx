@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import tweetApi from "../api/tweetApi";
 import { Tweet } from "../types/Tweet";
 
 type TweetContextType = {
@@ -22,6 +23,19 @@ type TweetProviderProps = {
 
 export const TweetProvider = ({ children }: TweetProviderProps) => {
 	const [tweets, setTweets] = useState<Tweet[]>([]);
+
+	useEffect(() => {
+		const getTweets = async () => {
+			try {
+				const res = await tweetApi.search();
+				setTweets(res.data);
+			} catch (err: any) {
+				const errors = err.data.errors;
+				console.log(errors);
+			}
+		};
+		getTweets();
+	}, []);
 
 	return (
 		<TweetContext.Provider value={{ tweets, setTweets }}>
