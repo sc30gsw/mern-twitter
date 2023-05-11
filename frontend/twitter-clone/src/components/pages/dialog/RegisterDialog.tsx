@@ -88,7 +88,7 @@ const RegisterDialog = ({ open, loginOpen, onClose }: RegisterDialogProps) => {
 	const toggleConfirmPasswordVisibility = () =>
 		setConfirmPasswordVisible(!confirmPasswordVisible);
 
-	const validFirstPage = () => {
+	const validFirstPage = async () => {
 		setLoading(true);
 
 		let err = false;
@@ -111,6 +111,14 @@ const RegisterDialog = ({ open, loginOpen, onClose }: RegisterDialogProps) => {
 		}
 
 		if (err) return setLoading(false);
+
+		try {
+			await authApi.existEmail(email);
+		} catch (err: any) {
+			const errors = err.data.errors;
+			setEmailErrMsg(errors[0].msg);
+			return setLoading(false);
+		}
 
 		setLoading(false);
 		setPage(page + 1);
@@ -200,7 +208,7 @@ const RegisterDialog = ({ open, loginOpen, onClose }: RegisterDialogProps) => {
 			navigate("/");
 		} catch (err: any) {
 			const errors = err.data.errors;
-			console.log(errors);
+			setUsernameErrMsg(errors[0].msg);
 			setLoading(false);
 		}
 	};

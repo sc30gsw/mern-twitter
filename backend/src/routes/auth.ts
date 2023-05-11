@@ -24,6 +24,17 @@ import { printErrors } from "../services/validation/validation";
 
 const router = express.Router();
 
+// メールアドレスバリデーションAPIを呼出
+// フロントエンドの仕様でAPIによりエラーチェックをする
+router.post(
+	"/authUser",
+	validEmailFormat,
+	printErrors,
+	(req: express.Request, res: express.Response) => {
+		validEmailExist(req, res);
+	}
+);
+
 // ユーザー新規登録APIを呼出
 router.post(
 	"/register",
@@ -34,7 +45,6 @@ router.post(
 	validPasswordLength,
 	validConfirmPasswordLength,
 	validUsernameExist,
-	validEmailExist,
 	validPasswordMatches,
 	printErrors,
 	(req: express.Request, res: express.Response) => {
@@ -62,7 +72,7 @@ router.post(
 	}
 );
 
-// パスワード忘れリクエストAPIの呼出
+// パスワードリセット通知APIの呼出
 router.post(
 	"/forgotPassword",
 	validUsernameOrEmail,

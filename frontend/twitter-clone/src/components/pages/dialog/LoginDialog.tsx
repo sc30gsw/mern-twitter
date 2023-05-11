@@ -126,7 +126,17 @@ const LoginDialog = ({ open, registerOpen, onClose }: LoginDialogProps) => {
 			navigate("/");
 		} catch (err: any) {
 			const errors = err.data.errors;
-			console.log(errors);
+			errors.map((err: any) => {
+				switch (err.param) {
+					case "username or email":
+						setUsernameOrEmailErrMsg(err.msg);
+						break;
+
+					case "password":
+						setPasswordErrMsg(err.msg);
+						break;
+				}
+			});
 
 			setLoading(false);
 		}
