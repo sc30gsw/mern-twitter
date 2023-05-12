@@ -8,7 +8,6 @@ import {
 	Typography,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { useUserContext } from "../../contexts/UserProvider";
 import { Link, useLocation } from "react-router-dom";
 import TweetList from "./TweetList";
 import { useEffect, useState } from "react";
@@ -29,11 +28,10 @@ const Profile = () => {
 	useEffect(() => {
 		const getUserTweets = async () => {
 			try {
-				const username = `@${pathname.replace("/", "")}`;
+				const username = `@${pathname.replace("/user/", "")}`;
 
 				const res = await tweetApi.searchUserTweets(username);
-				console.log(res.data);
-				if (res.data.length !== 0) {
+				if (res.data.length > 0) {
 					setUser(res.data[0].user);
 					setTweets(res.data);
 				} else {
@@ -47,7 +45,7 @@ const Profile = () => {
 		};
 
 		getUserTweets();
-	}, []);
+	}, [pathname, setTweets]);
 
 	const handleTabChange = (e: React.ChangeEvent<any>, newValue: number) =>
 		setTabValue(newValue);
