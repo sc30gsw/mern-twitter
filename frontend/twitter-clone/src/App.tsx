@@ -17,7 +17,7 @@ import { useUserContext } from "./contexts/UserProvider";
 import Profile from "./components/pages/Profile";
 import Home from "./components/pages/Home";
 import ResetPasswordDialog from "./components/pages/dialog/ResetPasswordDialog";
-import Tweet from "./components/pages/Tweet";
+import TweetDetail from "./components/pages/Tweet";
 
 const App = () => {
 	const { logoutEvent, settingPasswordEvent } = useUserContext();
@@ -108,7 +108,7 @@ const App = () => {
 					<Route path="/" element={<AppLayout />}>
 						<Route path="/" element={<Home />} />
 						<Route path="/user/:username" element={<Profile />} />
-						<Route path="/tweet/:_id" element={<Tweet />} />
+						<Route path="/tweet/:_id" element={<TweetDetail />} />
 					</Route>
 					<Route path="/auth" element={<AuthLayout />}>
 						<Route path="/auth" element={<Home />} />
