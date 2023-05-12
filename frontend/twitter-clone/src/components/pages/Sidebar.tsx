@@ -156,12 +156,12 @@ const Sidebar = () => {
 							)}
 						</Link>
 						<Link
-							to={`/${user.username.split("@").join("")}`}
+							to={`/user/${user.username.split("@").join("")}`}
 							style={{ marginTop: "10px" }}
 						>
 							{renderButtonWithTooltip(
 								location.pathname ===
-									`/${user.username.split("@").join("")}` ? (
+									`/user/${user.username.split("@").join("")}` ? (
 									<PersonIcon sx={{ color: "#14171A", fontSize: "40px" }} />
 								) : (
 									<PersonOutlineOutlinedIcon

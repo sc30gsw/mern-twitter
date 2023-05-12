@@ -99,7 +99,7 @@ const TweetList = ({ tweets }: TweetListProps) => {
 							<ListItemAvatar>
 								<IconButton
 									component={Link}
-									to={`/${tweet.user.username.split("@").join("")}`}
+									to={`/user/${tweet.user.username.split("@").join("")}`}
 								>
 									<Avatar
 										alt={tweet.user.profileName}
@@ -126,7 +126,7 @@ const TweetList = ({ tweets }: TweetListProps) => {
 											color="text.primary"
 										>
 											<Link
-												to={`/${tweet.user.username.split("@").join("")}`}
+												to={`/user/${tweet.user.username.split("@").join("")}`}
 												style={{ color: "black", textDecoration: "none" }}
 											>
 												{tweet.user.profileName}
@@ -149,15 +149,17 @@ const TweetList = ({ tweets }: TweetListProps) => {
 										</IconButton>
 									</Box>
 								</Box>
-								<Typography>{tweet.content}</Typography>
-								{tweet.tweetImage.map((image, index) => (
-									<TweetImage
-										key={image + index}
-										src={IMAGE_URL + image}
-										alt={image}
-										imageCount={tweet.tweetImage.length}
-									/>
-								))}
+								<Link to={`/tweet/${tweet._id}`}>
+									<Typography>{tweet.content}</Typography>
+									{tweet.tweetImage.map((image, index) => (
+										<TweetImage
+											key={image + index}
+											src={IMAGE_URL + image}
+											alt={image}
+											imageCount={tweet.tweetImage.length}
+										/>
+									))}
+								</Link>
 							</Box>
 						</ListItem>
 						<Divider variant="inset" component="li" />
