@@ -149,7 +149,10 @@ const TweetList = ({ tweets }: TweetListProps) => {
 										</IconButton>
 									</Box>
 								</Box>
-								<Link to={`/tweet/${tweet._id}`}>
+								<Link
+									to={`/tweet/${tweet._id}`}
+									style={{ color: "black", textDecoration: "none" }}
+								>
 									<Typography>{tweet.content}</Typography>
 									{tweet.tweetImage.map((image, index) => (
 										<TweetImage
