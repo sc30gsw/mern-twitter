@@ -2,6 +2,7 @@ import {
 	Avatar,
 	Box,
 	Button,
+	CircularProgress,
 	IconButton,
 	Tab,
 	Tabs,
@@ -21,6 +22,8 @@ const IMAGE_URL = process.env.REACT_APP_IMAGE_URL as string;
 const Profile = () => {
 	const pathname = useLocation().pathname;
 	const { tweets, setTweets } = useTweetContext();
+
+	const [loading, setLoading] = useState<boolean>(true);
 	const [user, setUser] = useState<TweetUser | null>(null);
 	const [tabValue, setTabValue] = useState<number>(0);
 	const [open, setOpen] = useState<boolean>(false);
@@ -39,8 +42,10 @@ const Profile = () => {
 					setUser(user);
 					setTweets([]);
 				}
+				setLoading(false);
 			} catch (err) {
 				console.log(err);
+				setLoading(false);
 			}
 		};
 
@@ -209,7 +214,20 @@ const Profile = () => {
 						</Tabs>
 					</Box>
 				</Box>
-				<TweetList tweets={tweets} />
+				{loading ? (
+					<Box
+						sx={{
+							display: "flex",
+							justifyContent: "center",
+							alignItems: "center",
+							height: "100%",
+						}}
+					>
+						<CircularProgress />
+					</Box>
+				) : (
+					<TweetList tweets={tweets} />
+				)}
 			</Box>
 			<EditProfileDialog open={open} onClose={handleClose} />
 		</>
