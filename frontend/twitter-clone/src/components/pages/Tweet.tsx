@@ -30,6 +30,9 @@ const TweetImage = styled("img")<ITweetImage>(({ theme, imageCount }) => ({
 	// marginBottom: theme.spacing(1),
 	// marginRight: theme.spacing(0.5),
 	...getImageStyle(imageCount),
+	"&:hover": {
+		cursor: "pointer",
+	},
 }));
 
 const getImageStyle = (imageCount: number) => {
@@ -51,7 +54,11 @@ const getImageStyle = (imageCount: number) => {
 	}
 };
 
-const TweetDetail = () => {
+type TweetDetailProps = {
+	isSlide: boolean;
+};
+
+const TweetDetail = ({ isSlide }: TweetDetailProps) => {
 	const [loading, setLoading] = useState<boolean>(false);
 	const [isInputEmpty, setIsInputEmpty] = useState<boolean>(true);
 	return (
@@ -143,6 +150,7 @@ const TweetDetail = () => {
 					自分が見てほしいアウトプットツイートには全然いいね来ないのに、くさい自己啓発ツイートにはめっちゃいいねつくの悲しい
 					全然本質的にじゃないけど、他人受け良さそうなくさい自己啓発ツイートした方が評判良くなるそうした方がええんか？
 				</Typography>
+				{isSlide || <></>}
 				{/* {tweet.tweetImage.map((image, index) => (
 							<TweetImage
 								key={image + index}
@@ -151,6 +159,7 @@ const TweetDetail = () => {
 								imageCount={tweet.tweetImage.length}
 							/>
 						))} */}
+
 				<Typography
 					variant="body1"
 					mt={2}
@@ -206,7 +215,7 @@ const TweetDetail = () => {
 					borderBottom: "solid 1px #cacaca",
 				}}
 			>
-				<Tooltips fontSize={"30px"} />
+				<Tooltips fontSize="30px" color="" />
 			</Box>
 			<Box
 				component="form"
@@ -459,13 +468,16 @@ const TweetDetail = () => {
 							>
 								<Typography>ツイート</Typography>
 								{/* {tweet.tweetImage.map((image, index) => (
-									<TweetImage
-										key={image + index}
-										src={IMAGE_URL + image}
-										alt={image}
-										imageCount={tweet.tweetImage.length}
-									/>
-								))} */}
+										<TweetImage
+											key={image + index}
+											src={IMAGE_URL + image}
+											alt={image}
+											imageCount={tweet.tweetImage.length}
+											onClick={() => {
+												handleDialogOpen(tweet.tweetImage, index);
+											}}
+										/>
+									))} */}
 							</Link>
 							<Box
 								sx={{
@@ -474,7 +486,7 @@ const TweetDetail = () => {
 									padding: "10px 0",
 								}}
 							>
-								<Tooltips fontSize={"20px"} />
+								<Tooltips fontSize="20px" color="" />
 							</Box>
 						</Box>
 					</ListItem>

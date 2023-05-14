@@ -1,17 +1,12 @@
-import {
-	Box,
-	Dialog,
-	DialogContent,
-	IconButton,
-	Slide,
-	Tooltip,
-} from "@mui/material";
+import { Box, Dialog, DialogContent, IconButton, Tooltip } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import KeyboardDoubleArrowLeftOutlinedIcon from "@mui/icons-material/KeyboardDoubleArrowLeftOutlined";
+import KeyboardDoubleArrowRightOutlinedIcon from "@mui/icons-material/KeyboardDoubleArrowRightOutlined";
 import ArrowForwardOutlinedIcon from "@mui/icons-material/ArrowForwardOutlined";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import { useEffect, useState } from "react";
 import Tooltips from "../Items/Tooltips";
+import TweetDetail from "../Tweet";
 
 const IMAGE_URL = process.env.REACT_APP_IMAGE_URL as string;
 
@@ -29,9 +24,7 @@ const TweetImageDialog = ({
 	initialImageIndex,
 }: TweetImageDialogProps) => {
 	const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
-	const [direction, setDirection] = useState<
-		"right" | "left" | "up" | "down" | undefined
-	>(undefined);
+	const [toggleOpen, setToggleOpen] = useState<boolean>(false);
 
 	useEffect(() => {
 		if (open) {
@@ -40,7 +33,6 @@ const TweetImageDialog = ({
 	}, [open, initialImageIndex]);
 
 	const handleNext = () => {
-		setDirection("left");
 		setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
 	};
 
@@ -52,8 +44,8 @@ const TweetImageDialog = ({
 
 	const onCloseWithExtraFunc = () => {
 		onClose();
-		setDirection(undefined);
 		setCurrentImageIndex(0);
+		setToggleOpen(false);
 	};
 
 	return (
@@ -75,69 +67,85 @@ const TweetImageDialog = ({
 						</IconButton>
 					</Tooltip>
 					<Tooltip title="Show">
-						<IconButton sx={{ color: "white" }}>
-							<KeyboardDoubleArrowLeftOutlinedIcon />
+						<IconButton
+							sx={{ color: "white" }}
+							onClick={() => setToggleOpen(!toggleOpen)}
+						>
+							{toggleOpen ? (
+								<KeyboardDoubleArrowLeftOutlinedIcon />
+							) : (
+								<KeyboardDoubleArrowRightOutlinedIcon />
+							)}
 						</IconButton>
 					</Tooltip>
 				</Box>
-				<Box sx={{ mt: 10 }}>
-					{images.map((image, index) => (
-						<Slide
-							key={image + index}
-							in={index === currentImageIndex}
-							direction={direction}
-							timeout={400}
-							mountOnEnter
-							unmountOnExit
+				<Box sx={{ display: toggleOpen ? "flex" : "block" }}>
+					<Box sx={{ mt: 10 }}>
+						<Box
+							sx={{
+								zIndex: 10,
+								position: "relative",
+							}}
 						>
 							<img
-								src={IMAGE_URL + image}
+								key={images[currentImageIndex]}
+								src={IMAGE_URL + images[currentImageIndex]}
 								alt="noImage"
 								style={{
 									height: "600px",
-									width: "100%",
-									position:
-										index === currentImageIndex ? "relative" : "absolute",
+									width: toggleOpen ? "450px" : "100%",
 									transition: "opacity 1s ease-in-out",
 								}}
 							/>
-						</Slide>
-					))}
-					{currentImageIndex < images.length - 1 && (
-						<IconButton
+							{currentImageIndex < images.length - 1 && (
+								<IconButton
+									sx={{
+										color: "white",
+										background: "#333333",
+										position: "absolute",
+										top: "50%",
+										right: 30,
+										":hover": {
+											background: "#333333",
+											opacity: 0.7,
+										},
+									}}
+									onClick={handleNext}
+								>
+									<ArrowForwardOutlinedIcon />
+								</IconButton>
+							)}
+							{currentImageIndex > 0 && (
+								<IconButton
+									sx={{
+										color: "white",
+										background: "#333333",
+										position: "absolute",
+										top: "50%",
+										left: 30,
+										":hover": {
+											background: "#333333",
+											opacity: 0.7,
+										},
+									}}
+									onClick={handlePrev}
+								>
+									<ArrowBackOutlinedIcon />
+								</IconButton>
+							)}
+						</Box>
+					</Box>
+					{toggleOpen && (
+						<Box
 							sx={{
-								color: "white",
-								background: "#333333",
-								position: "absolute",
-								top: "50%",
-								right: 30,
-								":hover": {
-									background: "#333333",
-									opacity: 0.7,
-								},
+								zIndex: 100,
+								height: "100%",
+								width: "70%",
+								background: "#fff",
 							}}
-							onClick={handleNext}
 						>
-							<ArrowForwardOutlinedIcon />
-						</IconButton>
-					)}
-					{currentImageIndex > 0 && (
-						<IconButton
-							sx={{
-								color: "white",
-								background: "#333333",
-								position: "absolute",
-								top: "50%",
-								left: 30,
-								":hover": {
-									background: "#333333",
-									opacity: 0.7,
-								},
-							}}
-							onClick={handlePrev}
-						>
-							<ArrowBackOutlinedIcon />
-						</IconButton>
+							<TweetDetail isSlide={true} />
+						</Box>
 					)}
 				</Box>
 				<Box

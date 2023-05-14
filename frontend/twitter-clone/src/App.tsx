@@ -108,7 +108,10 @@ const App = () => {
 					<Route path="/" element={<AppLayout />}>
 						<Route path="/" element={<Home />} />
 						<Route path="/user/:username" element={<Profile />} />
-						<Route path="/tweet/:_id" element={<TweetDetail />} />
+						<Route
+							path="/tweet/:_id"
+							element={<TweetDetail isSlide={false} />}
+						/>
 					</Route>
 					<Route path="/auth" element={<AuthLayout />}>
 						<Route path="/auth" element={<Home />} />
