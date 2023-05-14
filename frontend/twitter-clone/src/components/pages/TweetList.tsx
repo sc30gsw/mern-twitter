@@ -1,6 +1,5 @@
 import { Box, Typography, List, IconButton } from "@mui/material";
 import ListItem from "@mui/material/ListItem";
-import Divider from "@mui/material/Divider";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
 import Avatar from "@mui/material/Avatar";
@@ -10,6 +9,9 @@ import { Tweet } from "../../types/Tweet";
 import { styled } from "@mui/system";
 import tweetApi from "../../api/tweetApi";
 import { useTweetContext } from "../../contexts/TweetProvider";
+import Tooltips from "./Items/Tooltips";
+import { useState } from "react";
+import TweetImageDialog from "./dialog/TweetImageDialog";
 
 const IMAGE_URL = process.env.REACT_APP_IMAGE_URL as string;
 
@@ -24,6 +26,9 @@ const TweetImage = styled("img")<ITweetImage>(({ theme, imageCount }) => ({
 	marginBottom: theme.spacing(1),
 	marginRight: theme.spacing(0.5),
 	...getImageStyle(imageCount),
+	"&:hover": {
+		cursor: "pointer",
+	},
 }));
 
 const getImageStyle = (imageCount: number) => {
@@ -37,7 +42,7 @@ const getImageStyle = (imageCount: number) => {
 		case 3:
 		case 4:
 			return {
-				width: "calc(50% - 4px)", // 4px はマージンを考慮した値です
+				width: "calc(50% - 4px)",
 				height: "auto",
 			};
 		default:
@@ -51,6 +56,10 @@ type TweetListProps = {
 
 const TweetList = ({ tweets }: TweetListProps) => {
 	const { setTweets } = useTweetContext();
+	const [open, setOpen] = useState<boolean>(false);
+	const [selectedImages, setSelectedImages] = useState<string[]>([]);
+	const [initialImageIndex, setInitialImageIndex] = useState<number>(0);
+
 	const formatDate = (updatedAt: Date) => {
 		const now = new Date();
 		const tweetDate = new Date(updatedAt);
@@ -79,96 +88,136 @@ const TweetList = ({ tweets }: TweetListProps) => {
 		setTweets(res.data);
 	};
 
+	const handleDialogOpen = (images: string[], index: number) => {
+		setOpen(true);
+		setSelectedImages(images);
+		setInitialImageIndex(index);
+	};
+
+	const handleDialogClose = () => {
+		setOpen(false);
+		setSelectedImages([]);
+		setInitialImageIndex(0);
+	};
+
 	return (
-		<Box sx={{ borderTop: "solid 1px #657786" }}>
-			<Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-				<IconButton onClick={handleRefresh}>
-					<RefreshIcon />
-				</IconButton>
-			</Box>
-			{tweets.length > 0 &&
-				tweets.map((tweet) => (
-					<List
-						key={tweet._id}
-						sx={{
-							width: "100%",
-							bgcolor: "background.paper",
-						}}
-					>
-						<ListItem alignItems="flex-start">
-							<ListItemAvatar>
-								<IconButton
-									component={Link}
-									to={`/user/${tweet.user.username.split("@").join("")}`}
-								>
-									<Avatar
-										alt={tweet.user.profileName}
-										src={IMAGE_URL + tweet.user.icon}
-									/>
-								</IconButton>
-							</ListItemAvatar>
-							<Box sx={{ flexGrow: 1, mt: "20px" }}>
-								<Box
-									sx={{
-										display: "flex",
-										alignItems: "center",
-										justifyContent: "space-between",
-									}}
-								>
-									<Box sx={{ display: "flex" }}>
-										<Typography
-											sx={{
-												fontWeight: "bold",
-												":hover": { textDecoration: "underline" },
-											}}
-											component="span"
-											variant="body2"
-											color="text.primary"
-										>
-											<Link
-												to={`/user/${tweet.user.username.split("@").join("")}`}
-												style={{ color: "black", textDecoration: "none" }}
+		<>
+			<Box sx={{ borderTop: "solid 1px #657786" }}>
+				<Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+					<IconButton onClick={handleRefresh}>
+						<RefreshIcon />
+					</IconButton>
+				</Box>
+				{tweets.length > 0 &&
+					tweets.map((tweet) => (
+						<List
+							key={tweet._id}
+							sx={{
+								width: "100%",
+								bgcolor: "background.paper",
+								borderBottom: "solid 1px #cacaca",
+							}}
+						>
+							<ListItem alignItems="flex-start">
+								<ListItemAvatar>
+									<IconButton
+										component={Link}
+										to={`/user/${tweet.user.username.split("@").join("")}`}
+									>
+										<Avatar
+											alt={tweet.user.profileName}
+											src={IMAGE_URL + tweet.user.icon}
+										/>
+									</IconButton>
+								</ListItemAvatar>
+								<Box sx={{ flexGrow: 1, mt: "20px" }}>
+									<Box
+										sx={{
+											display: "flex",
+											alignItems: "center",
+											justifyContent: "space-between",
+										}}
+									>
+										<Box sx={{ display: "flex" }}>
+											<Typography
+												sx={{
+													fontWeight: "bold",
+													":hover": { textDecoration: "underline" },
+												}}
+												component="span"
+												variant="body2"
+												color="text.primary"
 											>
-												{tweet.user.profileName}
-											</Link>
-										</Typography>
+												<Link
+													to={`/user/${tweet.user.username
+														.split("@")
+														.join("")}`}
+													style={{ color: "black", textDecoration: "none" }}
+												>
+													{tweet.user.profileName}
+												</Link>
+											</Typography>
+											<Typography
+												component="span"
+												variant="body2"
+												ml={"5px"}
+												sx={{
+													color: "#898989",
+												}}
+											>
+												{tweet.user.username}・{formatDate(tweet.updatedAt)}
+											</Typography>
+										</Box>
+										<Box>
+											<IconButton>
+												<MoreHorizIcon />
+											</IconButton>
+										</Box>
+									</Box>
+									<Link
+										to={`/tweet/${tweet._id}`}
+										style={{ color: "black", textDecoration: "none" }}
+									>
 										<Typography
-											component="span"
-											variant="body2"
-											ml={"5px"}
 											sx={{
-												color: "#898989",
+												overflowWrap: "break-word",
+												wordBreak: "break-all",
 											}}
 										>
-											{tweet.user.username}・{formatDate(tweet.updatedAt)}
+											{tweet.content}
 										</Typography>
-									</Box>
-									<Box>
-										<IconButton>
-											<MoreHorizIcon />
-										</IconButton>
-									</Box>
-								</Box>
-								<Link
-									to={`/tweet/${tweet._id}`}
-									style={{ color: "black", textDecoration: "none" }}
-								>
-									<Typography>{tweet.content}</Typography>
+									</Link>
 									{tweet.tweetImage.map((image, index) => (
 										<TweetImage
 											key={image + index}
 											src={IMAGE_URL + image}
 											alt={image}
 											imageCount={tweet.tweetImage.length}
+											onClick={() => {
+												handleDialogOpen(tweet.tweetImage, index);
+											}}
 										/>
 									))}
-								</Link>
+								</Box>
+							</ListItem>
+							<Box
+								sx={{
+									display: "flex",
+									justifyContent: "space-evenly",
+								}}
+							>
+								<Tooltips fontSize="20px" color="" />
 							</Box>
-						</ListItem>
-						<Divider variant="inset" component="li" />
-					</List>
-				))}
-		</Box>
+						</List>
+					))}
+			</Box>
+			<TweetImageDialog
+				open={open}
+				onClose={handleDialogClose}
+				images={selectedImages}
+				initialImageIndex={initialImageIndex}
+			/>
+		</>
 	);
 };
 
