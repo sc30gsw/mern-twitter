@@ -6,28 +6,29 @@ import IosShareOutlinedIcon from "@mui/icons-material/IosShareOutlined";
 
 type TooltipsProps = {
 	fontSize: string;
+	color: string;
 };
 
-const Tooltips = ({ fontSize }: TooltipsProps) => {
+const Tooltips = ({ fontSize, color }: TooltipsProps) => {
 	return (
 		<>
 			<Tooltip title="Reply">
-				<IconButton>
+				<IconButton sx={{ color: color }}>
 					<ModeCommentOutlinedIcon sx={{ fontSize: fontSize }} />
 				</IconButton>
 			</Tooltip>
 			<Tooltip title="Retweet">
-				<IconButton>
+				<IconButton sx={{ color: color }}>
 					<RepeatOutlinedIcon sx={{ fontSize: fontSize }} />
 				</IconButton>
 			</Tooltip>
 			<Tooltip title="Like">
-				<IconButton>
+				<IconButton sx={{ color: color }}>
 					<FavoriteBorderOutlinedIcon sx={{ fontSize: fontSize }} />
 				</IconButton>
 			</Tooltip>
 			<Tooltip title="Share">
-				<IconButton>
+				<IconButton sx={{ color: color }}>
 					<IosShareOutlinedIcon sx={{ fontSize: fontSize }} />
 				</IconButton>
 			</Tooltip>
