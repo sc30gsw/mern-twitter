@@ -31,7 +31,7 @@ const Profile = () => {
 	useEffect(() => {
 		const getUserTweets = async () => {
 			try {
-				const username = `@${pathname.replace("/user/", "")}`;
+				const username = pathname.replace("/user/", "");
 
 				const res = await tweetApi.searchUserTweets(username);
 				if (res.data.length > 0) {
