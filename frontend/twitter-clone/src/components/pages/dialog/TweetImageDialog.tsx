@@ -15,6 +15,9 @@ type TweetImageDialogProps = {
 	onClose: () => void;
 	images: string[];
 	initialImageIndex: number;
+	tweetId: string;
+	userId: string;
+	isRetweet: boolean;
 };
 
 const TweetImageDialog = ({
@@ -22,6 +25,9 @@ const TweetImageDialog = ({
 	onClose,
 	images,
 	initialImageIndex,
+	tweetId,
+	userId,
+	isRetweet,
 }: TweetImageDialogProps) => {
 	const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
 	const [toggleOpen, setToggleOpen] = useState<boolean>(false);
@@ -155,7 +161,13 @@ const TweetImageDialog = ({
 						mt: 10,
 					}}
 				>
-					<Tooltips fontSize="30px" color="white" />
+					<Tooltips
+						userId={userId}
+						tweetId={tweetId}
+						fontSize="30px"
+						color="white"
+						isRetweet={isRetweet}
+					/>
 				</Box>
 			</DialogContent>
 		</Dialog>
