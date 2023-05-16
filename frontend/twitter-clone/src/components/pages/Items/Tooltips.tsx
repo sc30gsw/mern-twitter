@@ -1,15 +1,46 @@
-import { Box, IconButton, Tooltip } from "@mui/material";
+import { IconButton, Tooltip } from "@mui/material";
 import ModeCommentOutlinedIcon from "@mui/icons-material/ModeCommentOutlined";
 import RepeatOutlinedIcon from "@mui/icons-material/RepeatOutlined";
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
 import IosShareOutlinedIcon from "@mui/icons-material/IosShareOutlined";
+import tweetApi from "../../../api/tweetApi";
+import { useTweetContext } from "../../../contexts/TweetProvider";
+import { useEffect, useState } from "react";
 
 type TooltipsProps = {
+	userId: string;
+	tweetId: string;
 	fontSize: string;
 	color: string;
+	isRetweet: boolean;
 };
 
-const Tooltips = ({ fontSize, color }: TooltipsProps) => {
+const Tooltips = ({
+	userId,
+	tweetId,
+	fontSize,
+	color,
+	isRetweet,
+}: TooltipsProps) => {
+	const { setTweets } = useTweetContext();
+
+	const handleRetweet = async () => {
+		try {
+			if (isRetweet) {
+				await tweetApi.deleteRetweet(tweetId);
+				console.log("リツイートを削除しました");
+			} else {
+				await tweetApi.createRetweet({ userId, tweetId });
+				console.log("リツートに成功しました");
+			}
+
+			const res = await tweetApi.search();
+			setTweets(res.data);
+		} catch (err) {
+			console.log(err);
+		}
+	};
+
 	return (
 		<>
 			<Tooltip title="Reply">
@@ -18,7 +49,10 @@ const Tooltips = ({ fontSize, color }: TooltipsProps) => {
 				</IconButton>
 			</Tooltip>
 			<Tooltip title="Retweet">
-				<IconButton sx={{ color: color }}>
+				<IconButton
+					sx={{ color: isRetweet ? "rgb(0, 186, 124)" : color }}
+					onClick={handleRetweet}
+				>
 					<RepeatOutlinedIcon sx={{ fontSize: fontSize }} />
 				</IconButton>
 			</Tooltip>
