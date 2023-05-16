@@ -12,6 +12,8 @@ import { useTweetContext } from "../../contexts/TweetProvider";
 import Tooltips from "./Items/Tooltips";
 import { useState } from "react";
 import TweetImageDialog from "./dialog/TweetImageDialog";
+import RepeatOutlinedIcon from "@mui/icons-material/RepeatOutlined";
+import { useUserContext } from "../../contexts/UserProvider";
 
 const IMAGE_URL = process.env.REACT_APP_IMAGE_URL as string;
 
@@ -55,9 +57,13 @@ type TweetListProps = {
 };
 
 const TweetList = ({ tweets }: TweetListProps) => {
+	const { user } = useUserContext();
 	const { setTweets } = useTweetContext();
 	const [open, setOpen] = useState<boolean>(false);
+	const [selectedTweetId, setSelectedTweetId] = useState<string>("");
+	const [tweetUserId, setTweetUserId] = useState<string>("");
 	const [selectedImages, setSelectedImages] = useState<string[]>([]);
+	const [isImgRetweet, setIsImgRetweet] = useState<boolean>(false);
 	const [initialImageIndex, setInitialImageIndex] = useState<number>(0);
 
 	const formatDate = (updatedAt: Date) => {
@@ -88,14 +94,28 @@ const TweetList = ({ tweets }: TweetListProps) => {
 		setTweets(res.data);
 	};
 
-	const handleDialogOpen = (images: string[], index: number) => {
+	const handleDialogOpen = (
+		tweet: Tweet,
+		tweetId: string,
+		userId: string,
+		images: string[],
+		index: number
+	) => {
 		setOpen(true);
+		setIsImgRetweet(
+			Object.keys(tweet.retweet).length !== 0 && userId === user?._id
+		);
+		setSelectedTweetId(tweetId);
+		setTweetUserId(userId);
 		setSelectedImages(images);
 		setInitialImageIndex(index);
 	};
 
 	const handleDialogClose = () => {
 		setOpen(false);
+		setIsImgRetweet(false);
+		setSelectedTweetId("");
+		setTweetUserId("");
 		setSelectedImages([]);
 		setInitialImageIndex(0);
 	};
@@ -119,17 +139,86 @@ const TweetList = ({ tweets }: TweetListProps) => {
 							}}
 						>
 							<ListItem alignItems="flex-start">
+								{Object.keys(tweet.retweet).length !== 0 &&
+								tweet.userId === user?._id ? (
+									<Box sx={{ display: "flex", position: "absolute", left: 60 }}>
+										<RepeatOutlinedIcon
+											sx={{
+												color: "#898989",
+												fontSize: "20px",
+												mr: 1,
+											}}
+										/>
+										<Typography
+											sx={{
+												fontWeight: "bold",
+												fontSize: "13px",
+												":hover": { textDecoration: "underline" },
+											}}
+											component="span"
+											color="text.primary"
+										>
+											<Link
+												to={`/user/${tweet.user?.username}`}
+												style={{ color: "#898989", textDecoration: "none" }}
+											>
+												You Retweeted
+											</Link>
+										</Typography>
+									</Box>
+								) : Object.keys(tweet.retweet).length !== 0 ? (
+									<Box sx={{ display: "flex", position: "absolute", left: 60 }}>
+										<RepeatOutlinedIcon
+											sx={{
+												color: "#898989",
+												fontSize: "20px",
+												mr: 1,
+											}}
+										/>
+										<Typography
+											sx={{
+												fontWeight: "bold",
+												fontSize: "13px",
+												":hover": { textDecoration: "underline" },
+											}}
+											component="span"
+											color="text.primary"
+										>
+											<Link
+												to={`/user/${tweet.user?.username}`}
+												style={{ color: "#898989", textDecoration: "none" }}
+											>
+												{tweet.user?.username} Retweeted
+											</Link>
+										</Typography>
+									</Box>
+								) : (
+									<></>
+								)}
 								<ListItemAvatar>
 									<IconButton
 										component={Link}
-										to={`/user/${tweet.user.username.split("@").join("")}`}
+										to={`/user/${
+											tweet.retweet && Object.keys(tweet.retweet).length !== 0
+												? tweet.retweet.originalUser?.username
+												: tweet.user?.username
+										}`}
 									>
 										<Avatar
-											alt={tweet.user.profileName}
-											src={IMAGE_URL + tweet.user.icon}
+											alt={
+												tweet.retweet && Object.keys(tweet.retweet).length !== 0
+													? tweet.retweet.originalUser?.profileName
+													: tweet.user?.profileName
+											}
+											src={
+												tweet.retweet && Object.keys(tweet.retweet).length !== 0
+													? IMAGE_URL + tweet.retweet.originalUser?.icon
+													: IMAGE_URL + tweet.user?.icon
+											}
 										/>
 									</IconButton>
 								</ListItemAvatar>
+
 								<Box sx={{ flexGrow: 1, mt: "20px" }}>
 									<Box
 										sx={{
@@ -149,12 +238,18 @@ const TweetList = ({ tweets }: TweetListProps) => {
 												color="text.primary"
 											>
 												<Link
-													to={`/user/${tweet.user.username
-														.split("@")
-														.join("")}`}
+													to={`/user/${
+														tweet.retweet &&
+														Object.keys(tweet.retweet).length !== 0
+															? tweet.retweet.originalUser?.username
+															: tweet.user?.username
+													}`}
 													style={{ color: "black", textDecoration: "none" }}
 												>
-													{tweet.user.profileName}
+													{tweet.retweet &&
+													Object.keys(tweet.retweet).length !== 0
+														? tweet.retweet.originalUser?.profileName
+														: tweet.user?.profileName}
 												</Link>
 											</Typography>
 											<Typography
@@ -165,7 +260,15 @@ const TweetList = ({ tweets }: TweetListProps) => {
 													color: "#898989",
 												}}
 											>
-												{tweet.user.username}・{formatDate(tweet.updatedAt)}
+												{tweet.retweet &&
+												Object.keys(tweet.retweet).length !== 0
+													? tweet.retweet.originalUser?.username
+													: tweet.user?.username}
+												・
+												{tweet.retweet &&
+												Object.keys(tweet.retweet).length !== 0
+													? formatDate(tweet.retweet.originalUpdatedAt)
+													: formatDate(tweet.updatedAt)}
 											</Typography>
 										</Box>
 										<Box>
@@ -187,17 +290,41 @@ const TweetList = ({ tweets }: TweetListProps) => {
 											{tweet.content}
 										</Typography>
 									</Link>
-									{tweet.tweetImage.map((image, index) => (
-										<TweetImage
-											key={image + index}
-											src={IMAGE_URL + image}
-											alt={image}
-											imageCount={tweet.tweetImage.length}
-											onClick={() => {
-												handleDialogOpen(tweet.tweetImage, index);
-											}}
-										/>
-									))}
+									{tweet.retweet && Object.keys(tweet.retweet).length !== 0
+										? tweet.retweet.originalTweetImage.map((image, index) => (
+												<TweetImage
+													key={image + index}
+													src={IMAGE_URL + image}
+													alt={image}
+													imageCount={tweet.retweet.originalTweetImage.length}
+													onClick={() => {
+														handleDialogOpen(
+															tweet,
+															tweet._id,
+															tweet.userId,
+															tweet.retweet.originalTweetImage,
+															index
+														);
+													}}
+												/>
+										  ))
+										: tweet.tweetImage.map((image, index) => (
+												<TweetImage
+													key={image + index}
+													src={IMAGE_URL + image}
+													alt={image}
+													imageCount={tweet.tweetImage.length}
+													onClick={() => {
+														handleDialogOpen(
+															tweet,
+															tweet._id,
+															tweet.userId,
+															tweet.tweetImage,
+															index
+														);
+													}}
+												/>
+										  ))}
 								</Box>
 							</ListItem>
 							<Box
@@ -206,17 +333,29 @@ const TweetList = ({ tweets }: TweetListProps) => {
 									justifyContent: "space-evenly",
 								}}
 							>
-								<Tooltips fontSize="20px" color="" />
+								<Tooltips
+									userId={tweet.userId}
+									tweetId={tweet._id}
+									fontSize="20px"
+									color=""
+									isRetweet={
+										Object.keys(tweet.retweet).length !== 0 &&
+										tweet.userId === user?._id
+									}
+								/>
 							</Box>
+							<TweetImageDialog
+								open={open}
+								onClose={handleDialogClose}
+								images={selectedImages}
+								initialImageIndex={initialImageIndex}
+								tweetId={selectedTweetId}
+								userId={tweetUserId}
+								isRetweet={isImgRetweet}
+							/>
 						</List>
 					))}
 			</Box>
-			<TweetImageDialog
-				open={open}
-				onClose={handleDialogClose}
-				images={selectedImages}
-				initialImageIndex={initialImageIndex}
-			/>
 		</>
 	);
 };
