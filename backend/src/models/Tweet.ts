@@ -1,5 +1,35 @@
 import mongoose from "mongoose";
 
+const retweetSchema = new mongoose.Schema({
+	originalTweetId: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: "Tweet",
+		required: true,
+	},
+	originalUser: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: "User",
+		required: true,
+	},
+	originalContent: {
+		type: String,
+		required: true,
+	},
+	originalTweetImage: [
+		{
+			type: String,
+		},
+	],
+	originalCreatedAt: {
+		type: Date,
+		required: true,
+	},
+	originalUpdatedAt: {
+		type: Date,
+		required: true,
+	},
+});
+
 const tweetSchema = new mongoose.Schema({
 	userId: {
 		type: mongoose.Schema.Types.ObjectId,
@@ -15,6 +45,7 @@ const tweetSchema = new mongoose.Schema({
 			type: String,
 		},
 	],
+	retweet: retweetSchema,
 	createdAt: {
 		type: Date,
 		default: Date.now,

@@ -1,6 +1,8 @@
 import express from "express";
 import {
 	create,
+	createRetweet,
+	deleteRetweet,
 	searchTweets,
 	searchUserTweets,
 } from "../services/tweetService";
@@ -34,6 +36,26 @@ router.post(
 	verifyToken,
 	(req: express.Request, res: express.Response) => {
 		searchUserTweets(req, res);
+	}
+);
+
+// リツイート作成APIの呼出
+router.post(
+	"/createRetweet",
+	validContentLength,
+	printErrors,
+	verifyToken,
+	(req: express.Request, res: express.Response) => {
+		createRetweet(req, res);
+	}
+);
+
+// リツイート削除APIの呼出
+router.delete(
+	"/deleteRetweet",
+	verifyToken,
+	(req: express.Request, res: express.Response) => {
+		deleteRetweet(req, res);
 	}
 );
 

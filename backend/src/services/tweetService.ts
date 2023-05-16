@@ -1,5 +1,6 @@
 import express from "express";
 import Tweet from "../models/Tweet";
+import User from "../models/User";
 
 export const create = async (req: express.Request, res: express.Response) => {
 	try {
@@ -26,6 +27,7 @@ export const create = async (req: express.Request, res: express.Response) => {
 
 		return res.status(201).json(tweet);
 	} catch (err) {
+		console.log(err);
 		return res.status(500).json(err);
 	}
 };
@@ -44,9 +46,32 @@ export const searchTweets = async (
 					as: "user",
 				},
 			},
+			{
+				$lookup: {
+					from: "users",
+					localField: "retweet.originalUser",
+					foreignField: "_id",
+					as: "retweet.originalUser",
+				},
+			},
 			{ $unwind: "$user" },
+			{
+				$unwind: {
+					path: "$retweet.originalUser",
+					preserveNullAndEmptyArrays: true,
+				},
+			},
 			{ $sort: { updatedAt: -1 } },
-			{ $project: { "user.password": false } },
+			{
+				$project: {
+					"user.password": false,
+					"user.resetPasswordToken": false,
+					"user.resetPasswordExpires": false,
+					"retweet.originalUser.password": false,
+					"retweet.originalUser.resetPasswordToken": false,
+					"retweet.originalUser.resetPasswordExpires": false,
+				},
+			},
 		];
 
 		if (req.body.content) {
@@ -88,16 +113,111 @@ export const searchUserTweets = async (
 					as: "user",
 				},
 			},
+			{
+				$lookup: {
+					from: "users",
+					localField: "retweet.originalUser",
+					foreignField: "_id",
+					as: "retweet.originalUser",
+				},
+			},
 			{ $match: { "user.username": username } },
 			{ $unwind: "$user" },
+			{
+				$unwind: {
+					path: "$retweet.originalUser",
+					preserveNullAndEmptyArrays: true,
+				},
+			},
 			{ $sort: { updatedAt: -1 } },
-			{ $project: { "user.password": false } },
+			{
+				$project: {
+					"user.password": false,
+					"user.resetPasswordToken": false,
+					"user.resetPasswordExpires": false,
+				},
+			},
 		];
 
 		const tweets = await Tweet.aggregate(query);
 
 		return res.status(200).json(tweets);
 	} catch (err) {
+		return res.status(500).json(err);
+	}
+};
+
+export const createRetweet = async (
+	req: express.Request,
+	res: express.Response
+) => {
+	try {
+		if (!req.user?.id) {
+			return res.status(401).json({
+				errors: [
+					{
+						param: "userId",
+						msg: "無効なリクエストです",
+					},
+				],
+			});
+		}
+
+		const tweet = await Tweet.findById(req.body.tweetId);
+
+		if (!tweet) {
+			return res.status(400).json({
+				errors: [
+					{
+						param: "tweet",
+						msg: "ツイートが存在しません",
+					},
+				],
+			});
+		}
+
+		const retweet = await Tweet.create({
+			userId: req.user?.id,
+			content: tweet.content,
+			tweetImage: tweet.tweetImage,
+			retweet: {
+				originalTweetId: tweet._id,
+				originalUser: req.body.userId,
+				originalContent: tweet.content,
+				originalTweetImage: tweet.tweetImage,
+				originalCreatedAt: tweet.createdAt,
+				originalUpdatedAt: tweet.updatedAt,
+			},
+		});
+
+		return res.status(201).json(retweet);
+	} catch (err) {
+		return res.status(500).json(err);
+	}
+};
+
+export const deleteRetweet = async (
+	req: express.Request,
+	res: express.Response
+) => {
+	try {
+		const tweet = await Tweet.findById(req.query.tweetId);
+		if (!tweet || !tweet.retweet) {
+			return res.status(400).json({
+				errors: [
+					{
+						param: "tweet",
+						msg: "ツイートが存在しません",
+					},
+				],
+			});
+		}
+
+		const deletedTweet = await Tweet.deleteOne({ _id: req.query.tweetId });
+
+		return res.status(200).json(deletedTweet);
+	} catch (err) {
+		console.log(err);
 		return res.status(500).json(err);
 	}
 };
