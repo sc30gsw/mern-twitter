@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 type TooltipsProps = {
 	userId: string;
 	tweetId: string;
+	originalTweetId: string;
 	fontSize: string;
 	color: string;
 	isRetweet: boolean;
@@ -18,6 +19,7 @@ type TooltipsProps = {
 const Tooltips = ({
 	userId,
 	tweetId,
+	originalTweetId,
 	fontSize,
 	color,
 	isRetweet,
@@ -30,7 +32,10 @@ const Tooltips = ({
 				await tweetApi.deleteRetweet(tweetId);
 				console.log("リツイートを削除しました");
 			} else {
-				await tweetApi.createRetweet({ userId, tweetId });
+				await tweetApi.createRetweet({
+					userId,
+					tweetId: originalTweetId ? originalTweetId : tweetId,
+				});
 				console.log("リツートに成功しました");
 			}
 

@@ -18,6 +18,7 @@ type TweetImageDialogProps = {
 	tweetId: string;
 	userId: string;
 	isRetweet: boolean;
+	originalTweetId: string;
 };
 
 const TweetImageDialog = ({
@@ -28,6 +29,7 @@ const TweetImageDialog = ({
 	tweetId,
 	userId,
 	isRetweet,
+	originalTweetId,
 }: TweetImageDialogProps) => {
 	const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
 	const [toggleOpen, setToggleOpen] = useState<boolean>(false);
@@ -167,6 +169,7 @@ const TweetImageDialog = ({
 						fontSize="30px"
 						color="white"
 						isRetweet={isRetweet}
+						originalTweetId={originalTweetId}
 					/>
 				</Box>
 			</DialogContent>

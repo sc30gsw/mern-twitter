@@ -64,6 +64,7 @@ const TweetList = ({ tweets }: TweetListProps) => {
 	const [tweetUserId, setTweetUserId] = useState<string>("");
 	const [selectedImages, setSelectedImages] = useState<string[]>([]);
 	const [isImgRetweet, setIsImgRetweet] = useState<boolean>(false);
+	const [originalTweetId, setOriginalTweetId] = useState<string>("");
 	const [initialImageIndex, setInitialImageIndex] = useState<number>(0);
 
 	const formatDate = (updatedAt: Date) => {
@@ -99,6 +100,7 @@ const TweetList = ({ tweets }: TweetListProps) => {
 		tweetId: string,
 		userId: string,
 		images: string[],
+		originalTweetId: string,
 		index: number
 	) => {
 		setOpen(true);
@@ -108,6 +110,7 @@ const TweetList = ({ tweets }: TweetListProps) => {
 		setSelectedTweetId(tweetId);
 		setTweetUserId(userId);
 		setSelectedImages(images);
+		setOriginalTweetId(originalTweetId);
 		setInitialImageIndex(index);
 	};
 
@@ -303,6 +306,7 @@ const TweetList = ({ tweets }: TweetListProps) => {
 															tweet._id,
 															tweet.userId,
 															tweet.retweet.originalTweetImage,
+															tweet.retweet.originalTweetId,
 															index
 														);
 													}}
@@ -320,6 +324,10 @@ const TweetList = ({ tweets }: TweetListProps) => {
 															tweet._id,
 															tweet.userId,
 															tweet.tweetImage,
+															tweet.retweet &&
+																Object.keys(tweet.retweet).length !== 0
+																? tweet.retweet.originalTweetId
+																: "",
 															index
 														);
 													}}
@@ -336,6 +344,11 @@ const TweetList = ({ tweets }: TweetListProps) => {
 								<Tooltips
 									userId={tweet.userId}
 									tweetId={tweet._id}
+									originalTweetId={
+										tweet.retweet && Object.keys(tweet.retweet).length !== 0
+											? tweet.retweet.originalTweetId
+											: ""
+									}
 									fontSize="20px"
 									color=""
 									isRetweet={
@@ -352,6 +365,7 @@ const TweetList = ({ tweets }: TweetListProps) => {
 								tweetId={selectedTweetId}
 								userId={tweetUserId}
 								isRetweet={isImgRetweet}
+								originalTweetId={originalTweetId}
 							/>
 						</List>
 					))}

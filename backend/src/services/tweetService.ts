@@ -1,6 +1,7 @@
 import express from "express";
 import Tweet from "../models/Tweet";
 import User from "../models/User";
+import { ObjectId } from "mongoose-typescript";
 
 export const create = async (req: express.Request, res: express.Response) => {
 	try {
@@ -163,7 +164,7 @@ export const createRetweet = async (
 			});
 		}
 
-		const tweet = await Tweet.findById(req.body.tweetId);
+		let tweet = await Tweet.findById(req.body.tweetId);
 
 		if (!tweet) {
 			return res.status(400).json({
@@ -182,7 +183,7 @@ export const createRetweet = async (
 			tweetImage: tweet.tweetImage,
 			retweet: {
 				originalTweetId: tweet._id,
-				originalUser: req.body.userId,
+				originalUser: tweet.userId,
 				originalContent: tweet.content,
 				originalTweetImage: tweet.tweetImage,
 				originalCreatedAt: tweet.createdAt,
@@ -217,7 +218,49 @@ export const deleteRetweet = async (
 
 		return res.status(200).json(deletedTweet);
 	} catch (err) {
-		console.log(err);
+		return res.status(500).json(err);
+	}
+};
+
+const getFirstRetweet = async (tweetId: ObjectId) => {
+	try {
+		if (!tweetId) {
+			return {
+				errors: [
+					{
+						param: "tweetId",
+						msg: "無効なリクエストです",
+					},
+				],
+			};
+		}
+
+		const tweet = await Tweet.findOne({ _id: tweetId });
+
+		return tweet;
+	} catch (err) {
+		return err;
+	}
+};
+
+export const countRetweet = async (
+	req: express.Request,
+	res: express.Response
+) => {
+	try {
+		if (!req.body.tweetId) {
+			return res.status(400).json({
+				errors: [
+					{
+						param: "tweetId",
+						msg: "無効なリクエストです",
+					},
+				],
+			});
+		}
+
+		// const retweetCount;
+	} catch (err) {
 		return res.status(500).json(err);
 	}
 };
