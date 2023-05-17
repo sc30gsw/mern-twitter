@@ -17,8 +17,13 @@ const tweetApi = {
 	createRetweet: (params: { userId: string; tweetId: string }) =>
 		axiosClient.post("tweet/createRetweet", params),
 	// リツイート削除API
-	deleteRetweet: (tweetId: string) =>
-		axiosClient.delete("tweet/deleteRetweet", { params: { tweetId: tweetId } }),
+	deleteRetweet: (tweetId: string, originalTweetId: string) =>
+		axiosClient.delete("tweet/deleteRetweet", {
+			params: { tweetId: tweetId, originalTweetId: originalTweetId },
+		}),
+	// リツイート件数取得API
+	countRetweet: (tweetId: string) =>
+		axiosClient.post("tweet/countRetweet", { tweetId }),
 };
 
 export default tweetApi;

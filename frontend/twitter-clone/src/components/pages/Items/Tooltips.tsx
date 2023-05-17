@@ -6,6 +6,7 @@ import IosShareOutlinedIcon from "@mui/icons-material/IosShareOutlined";
 import tweetApi from "../../../api/tweetApi";
 import { useTweetContext } from "../../../contexts/TweetProvider";
 import { useEffect, useState } from "react";
+import { useUserContext } from "../../../contexts/UserProvider";
 
 type TooltipsProps = {
 	userId: string;
@@ -13,7 +14,7 @@ type TooltipsProps = {
 	originalTweetId: string;
 	fontSize: string;
 	color: string;
-	isRetweet: boolean;
+	retweetUsers: string[];
 };
 
 const Tooltips = ({
@@ -22,22 +23,35 @@ const Tooltips = ({
 	originalTweetId,
 	fontSize,
 	color,
-	isRetweet,
+	retweetUsers,
 }: TooltipsProps) => {
+	const { user } = useUserContext();
 	const { setTweets } = useTweetContext();
+	const [count, setCount] = useState<number>(0);
 
 	const handleRetweet = async () => {
 		try {
-			if (isRetweet) {
-				await tweetApi.deleteRetweet(tweetId);
+			if (
+				retweetUsers.length > 0 &&
+				retweetUsers.includes(user?._id as string)
+			) {
+				await tweetApi.deleteRetweet(tweetId, originalTweetId);
 				console.log("リツイートを削除しました");
-			} else {
+			} else if (!retweetUsers.includes(user?._id as string)) {
 				await tweetApi.createRetweet({
 					userId,
 					tweetId: originalTweetId ? originalTweetId : tweetId,
 				});
 				console.log("リツートに成功しました");
+			} else {
+				alert("リツイート済みツイート");
 			}
+
+			const retweetCount = await tweetApi.countRetweet(
+				originalTweetId ? originalTweetId : tweetId
+			);
+
+			console.log(retweetCount);
 
 			const res = await tweetApi.search();
 			setTweets(res.data);
@@ -55,7 +69,11 @@ const Tooltips = ({
 			</Tooltip>
 			<Tooltip title="Retweet">
 				<IconButton
-					sx={{ color: isRetweet ? "rgb(0, 186, 124)" : color }}
+					sx={{
+						color: retweetUsers.includes(user?._id as string)
+							? "rgb(0, 186, 124)"
+							: color,
+					}}
 					onClick={handleRetweet}
 				>
 					<RepeatOutlinedIcon sx={{ fontSize: fontSize }} />

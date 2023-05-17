@@ -1,5 +1,6 @@
 import express from "express";
 import {
+	countRetweet,
 	create,
 	createRetweet,
 	deleteRetweet,
@@ -56,6 +57,15 @@ router.delete(
 	verifyToken,
 	(req: express.Request, res: express.Response) => {
 		deleteRetweet(req, res);
+	}
+);
+
+// リツイート件数取得APIの呼出
+router.post(
+	"/countRetweet",
+	verifyToken,
+	(req: express.Request, res: express.Response) => {
+		countRetweet(req, res);
 	}
 );
 

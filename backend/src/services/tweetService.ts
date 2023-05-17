@@ -164,7 +164,7 @@ export const createRetweet = async (
 			});
 		}
 
-		let tweet = await Tweet.findById(req.body.tweetId);
+		const tweet = await Tweet.findById(req.body.tweetId);
 
 		if (!tweet) {
 			return res.status(400).json({
@@ -177,10 +177,50 @@ export const createRetweet = async (
 			});
 		}
 
+		const updatedTweet = await Tweet.findOneAndUpdate(
+			{ _id: tweet._id, __v: tweet.__v },
+			{
+				$set: {
+					retweetUsers: req.user?.id,
+				},
+				$inc: { __v: 1 },
+			},
+			{ new: true, returnNewDocument: false }
+		);
+
+		if (!updatedTweet) {
+			return res.status(409).json({
+				errors: [
+					{
+						param: "updatedTweet version",
+						msg: "最新のデータに更新してから実行してください",
+					},
+				],
+			});
+		}
+
+		const tweetInRetweet = await Tweet.find({
+			"retweet.originalTweetId": req.body.tweetId,
+		});
+
+		tweetInRetweet.map(async (tweet) => {
+			await Tweet.findOneAndUpdate(
+				{ _id: tweet._id, __v: tweet.__v },
+				{
+					$set: {
+						retweetUsers: req.user?.id,
+					},
+					$inc: { __v: 1 },
+				},
+				{ new: true, returnNewDocument: false }
+			);
+		});
+
 		const retweet = await Tweet.create({
 			userId: req.user?.id,
 			content: tweet.content,
 			tweetImage: tweet.tweetImage,
+			retweetUsers: req.user?.id,
 			retweet: {
 				originalTweetId: tweet._id,
 				originalUser: tweet.userId,
@@ -188,6 +228,7 @@ export const createRetweet = async (
 				originalTweetImage: tweet.tweetImage,
 				originalCreatedAt: tweet.createdAt,
 				originalUpdatedAt: tweet.updatedAt,
+				originalTweetVersion: updatedTweet.__v,
 			},
 		});
 
@@ -214,32 +255,56 @@ export const deleteRetweet = async (
 			});
 		}
 
-		const deletedTweet = await Tweet.deleteOne({ _id: req.query.tweetId });
+		const updatedTweet = await Tweet.findOneAndUpdate(
+			{
+				_id: tweet.retweet.originalTweetId,
+			},
+			{
+				$pull: { retweetUsers: req.user?.id },
+				$inc: { __v: 1 },
+			},
+			{ new: true, returnNewDocument: false }
+		);
+
+		if (!updatedTweet) {
+			return res.status(409).json({
+				errors: [
+					{
+						param: "version",
+						msg: "最新のデータに更新してから実行してください",
+					},
+				],
+			});
+		}
+
+		const tweetInRetweet = await Tweet.find({
+			"retweet.originalTweetId": req.query.originalTweetId,
+		});
+
+		for (let i = 0; i < tweetInRetweet.length; i++) {
+			await Tweet.findOneAndUpdate(
+				{
+					_id: tweetInRetweet[i]._id,
+					__v: tweetInRetweet[i].__v,
+				},
+				{
+					$pull: { retweetUsers: req.user?.id },
+					$inc: { __v: 1 },
+				},
+				{ new: true, returnNewDocument: false }
+			);
+		}
+
+		console.log(req.query.tweetId);
+
+		const deletedTweet = await Tweet.deleteOne({
+			_id: req.query.tweetId,
+			userId: req.user?.id,
+		});
 
 		return res.status(200).json(deletedTweet);
 	} catch (err) {
 		return res.status(500).json(err);
-	}
-};
-
-const getFirstRetweet = async (tweetId: ObjectId) => {
-	try {
-		if (!tweetId) {
-			return {
-				errors: [
-					{
-						param: "tweetId",
-						msg: "無効なリクエストです",
-					},
-				],
-			};
-		}
-
-		const tweet = await Tweet.findOne({ _id: tweetId });
-
-		return tweet;
-	} catch (err) {
-		return err;
 	}
 };
 
@@ -259,7 +324,12 @@ export const countRetweet = async (
 			});
 		}
 
-		// const retweetCount;
+		const retweetCount = await Tweet.count({
+			retweet: { $exists: true },
+			"retweet.originalTweetId": req.body.tweetId,
+		});
+
+		return res.status(200).json(retweetCount);
 	} catch (err) {
 		return res.status(500).json(err);
 	}

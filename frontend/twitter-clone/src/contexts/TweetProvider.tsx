@@ -1,5 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import tweetApi from "../api/tweetApi";
+import React, { createContext, useContext, useState } from "react";
 import { Tweet } from "../types/Tweet";
 
 type TweetContextType = {

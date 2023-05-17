@@ -161,7 +161,7 @@ export const resetPassword = async (
 				},
 				$inc: { __v: 1 },
 			},
-			{ new: true, returnOriginal: false }
+			{ new: true, returnNewDocument: false }
 		);
 
 		if (!updatedUser) {
@@ -236,7 +236,7 @@ export const updateUser = async (
 				},
 				$inc: { __v: 1 },
 			},
-			{ new: true, returnOriginal: false }
+			{ new: true, returnNewDocument: false }
 		);
 
 		if (!updatedUser) {

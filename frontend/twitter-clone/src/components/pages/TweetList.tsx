@@ -63,8 +63,8 @@ const TweetList = ({ tweets }: TweetListProps) => {
 	const [selectedTweetId, setSelectedTweetId] = useState<string>("");
 	const [tweetUserId, setTweetUserId] = useState<string>("");
 	const [selectedImages, setSelectedImages] = useState<string[]>([]);
-	const [isImgRetweet, setIsImgRetweet] = useState<boolean>(false);
 	const [originalTweetId, setOriginalTweetId] = useState<string>("");
+	const [retweetUserIds, setRetweetUserIds] = useState<string[]>([]);
 	const [initialImageIndex, setInitialImageIndex] = useState<number>(0);
 
 	const formatDate = (updatedAt: Date) => {
@@ -96,30 +96,28 @@ const TweetList = ({ tweets }: TweetListProps) => {
 	};
 
 	const handleDialogOpen = (
-		tweet: Tweet,
 		tweetId: string,
 		userId: string,
 		images: string[],
 		originalTweetId: string,
+		retweetUsers: string[],
 		index: number
 	) => {
 		setOpen(true);
-		setIsImgRetweet(
-			Object.keys(tweet.retweet).length !== 0 && userId === user?._id
-		);
 		setSelectedTweetId(tweetId);
 		setTweetUserId(userId);
 		setSelectedImages(images);
 		setOriginalTweetId(originalTweetId);
+		setRetweetUserIds(retweetUsers);
 		setInitialImageIndex(index);
 	};
 
 	const handleDialogClose = () => {
 		setOpen(false);
-		setIsImgRetweet(false);
 		setSelectedTweetId("");
 		setTweetUserId("");
 		setSelectedImages([]);
+		setRetweetUserIds([]);
 		setInitialImageIndex(0);
 	};
 
@@ -221,7 +219,6 @@ const TweetList = ({ tweets }: TweetListProps) => {
 										/>
 									</IconButton>
 								</ListItemAvatar>
-
 								<Box sx={{ flexGrow: 1, mt: "20px" }}>
 									<Box
 										sx={{
@@ -302,11 +299,11 @@ const TweetList = ({ tweets }: TweetListProps) => {
 													imageCount={tweet.retweet.originalTweetImage.length}
 													onClick={() => {
 														handleDialogOpen(
-															tweet,
 															tweet._id,
 															tweet.userId,
 															tweet.retweet.originalTweetImage,
 															tweet.retweet.originalTweetId,
+															tweet.retweetUsers,
 															index
 														);
 													}}
@@ -320,7 +317,6 @@ const TweetList = ({ tweets }: TweetListProps) => {
 													imageCount={tweet.tweetImage.length}
 													onClick={() => {
 														handleDialogOpen(
-															tweet,
 															tweet._id,
 															tweet.userId,
 															tweet.tweetImage,
@@ -328,6 +324,7 @@ const TweetList = ({ tweets }: TweetListProps) => {
 																Object.keys(tweet.retweet).length !== 0
 																? tweet.retweet.originalTweetId
 																: "",
+															tweet.retweetUsers,
 															index
 														);
 													}}
@@ -351,10 +348,7 @@ const TweetList = ({ tweets }: TweetListProps) => {
 									}
 									fontSize="20px"
 									color=""
-									isRetweet={
-										Object.keys(tweet.retweet).length !== 0 &&
-										tweet.userId === user?._id
-									}
+									retweetUsers={tweet.retweetUsers ? tweet.retweetUsers : []}
 								/>
 							</Box>
 							<TweetImageDialog
@@ -364,7 +358,7 @@ const TweetList = ({ tweets }: TweetListProps) => {
 								initialImageIndex={initialImageIndex}
 								tweetId={selectedTweetId}
 								userId={tweetUserId}
-								isRetweet={isImgRetweet}
+								retweetUsers={retweetUserIds}
 								originalTweetId={originalTweetId}
 							/>
 						</List>

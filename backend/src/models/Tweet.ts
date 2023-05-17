@@ -28,6 +28,10 @@ const retweetSchema = new mongoose.Schema({
 		type: Date,
 		required: true,
 	},
+	originalTweetVersion: {
+		type: Number,
+		required: true,
+	},
 });
 
 const tweetSchema = new mongoose.Schema({
@@ -46,6 +50,11 @@ const tweetSchema = new mongoose.Schema({
 		},
 	],
 	retweet: retweetSchema,
+	retweetUsers: [
+		{
+			type: String,
+		},
+	],
 	createdAt: {
 		type: Date,
 		default: Date.now,
