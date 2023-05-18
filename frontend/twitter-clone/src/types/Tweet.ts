@@ -16,6 +16,7 @@ export type Tweet = {
 	tweetImage: string[];
 	retweet: Retweet;
 	retweetUsers: string[];
+	viewCount: number;
 	createdAt: Date;
 	updatedAt: Date;
 	__v: number;
