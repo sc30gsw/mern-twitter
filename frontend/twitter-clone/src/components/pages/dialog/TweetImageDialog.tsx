@@ -152,7 +152,7 @@ const TweetImageDialog = ({
 								background: "#fff",
 							}}
 						>
-							<TweetDetail isSlide={true} />
+							<TweetDetail />
 						</Box>
 					)}
 				</Box>
