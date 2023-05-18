@@ -164,7 +164,9 @@ export const createRetweet = async (
 			});
 		}
 
-		const tweet = await Tweet.findById(req.body.tweetId);
+		const tweet = await Tweet.findById(
+			req.body.originalTweetId ? req.body.originalTweetId : req.body.tweetId
+		);
 
 		if (!tweet) {
 			return res.status(400).json({
@@ -180,7 +182,7 @@ export const createRetweet = async (
 		const updatedTweet = await Tweet.findOneAndUpdate(
 			{ _id: tweet._id, __v: tweet.__v },
 			{
-				$set: {
+				$addToSet: {
 					retweetUsers: req.user?.id,
 				},
 				$inc: { __v: 1 },
@@ -200,14 +202,16 @@ export const createRetweet = async (
 		}
 
 		const tweetInRetweet = await Tweet.find({
-			"retweet.originalTweetId": req.body.tweetId,
+			"retweet.originalTweetId": req.body.originalTweetId
+				? req.body.originalTweetId
+				: req.body.tweetId,
 		});
 
 		tweetInRetweet.map(async (tweet) => {
 			await Tweet.findOneAndUpdate(
 				{ _id: tweet._id, __v: tweet.__v },
 				{
-					$set: {
+					$addToSet: {
 						retweetUsers: req.user?.id,
 					},
 					$inc: { __v: 1 },
@@ -220,7 +224,7 @@ export const createRetweet = async (
 			userId: req.user?.id,
 			content: tweet.content,
 			tweetImage: tweet.tweetImage,
-			retweetUsers: req.user?.id,
+			retweetUsers: updatedTweet.retweetUsers,
 			retweet: {
 				originalTweetId: tweet._id,
 				originalUser: tweet.userId,
@@ -281,11 +285,11 @@ export const deleteRetweet = async (
 			"retweet.originalTweetId": req.query.originalTweetId,
 		});
 
-		for (let i = 0; i < tweetInRetweet.length; i++) {
+		tweetInRetweet.map(async (tweet) => {
 			await Tweet.findOneAndUpdate(
 				{
-					_id: tweetInRetweet[i]._id,
-					__v: tweetInRetweet[i].__v,
+					_id: tweet._id,
+					__v: tweet.__v,
 				},
 				{
 					$pull: { retweetUsers: req.user?.id },
@@ -293,9 +297,7 @@ export const deleteRetweet = async (
 				},
 				{ new: true, returnNewDocument: false }
 			);
-		}
-
-		console.log(req.query.tweetId);
+		});
 
 		const deletedTweet = await Tweet.deleteOne({
 			_id: req.query.tweetId,
@@ -303,33 +305,6 @@ export const deleteRetweet = async (
 		});
 
 		return res.status(200).json(deletedTweet);
-	} catch (err) {
-		return res.status(500).json(err);
-	}
-};
-
-export const countRetweet = async (
-	req: express.Request,
-	res: express.Response
-) => {
-	try {
-		if (!req.body.tweetId) {
-			return res.status(400).json({
-				errors: [
-					{
-						param: "tweetId",
-						msg: "無効なリクエストです",
-					},
-				],
-			});
-		}
-
-		const retweetCount = await Tweet.count({
-			retweet: { $exists: true },
-			"retweet.originalTweetId": req.body.tweetId,
-		});
-
-		return res.status(200).json(retweetCount);
 	} catch (err) {
 		return res.status(500).json(err);
 	}
