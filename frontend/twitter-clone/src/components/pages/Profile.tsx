@@ -9,7 +9,7 @@ import {
 	Typography,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import TweetList from "./TweetList";
 import { useEffect, useState } from "react";
 import EditProfileDialog from "./dialog/EditProfileDialog";
@@ -23,6 +23,9 @@ const Profile = () => {
 	const pathname = useLocation().pathname;
 	const { user, setUser } = useUserContext();
 	const { tweets, setTweets } = useTweetContext();
+
+	const navigate = useNavigate();
+	const goBack = () => navigate(-1);
 
 	const [loading, setLoading] = useState<boolean>(true);
 	const [tabValue, setTabValue] = useState<number>(0);
@@ -68,7 +71,7 @@ const Profile = () => {
 				}}
 			>
 				<Box sx={{ display: "flex", alignItems: "center" }}>
-					<IconButton component={Link} to={"/"}>
+					<IconButton onClick={goBack}>
 						<ArrowBackIcon />
 					</IconButton>
 					<Box sx={{ ml: "20px" }}>
