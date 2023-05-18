@@ -9,7 +9,7 @@ import {
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
 import Avatar from "@mui/material/Avatar";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import noAvatar from "../../assets/images/noAvatar.png";
 import ImageIcon from "@mui/icons-material/Image";
@@ -59,6 +59,10 @@ type TweetDetailProps = {
 };
 
 const TweetDetail = ({ isSlide }: TweetDetailProps) => {
+	const { tweetId } = useParams();
+	const navigate = useNavigate();
+	const goBack = () => navigate(-1);
+
 	const [loading, setLoading] = useState<boolean>(false);
 	const [isInputEmpty, setIsInputEmpty] = useState<boolean>(true);
 	return (
@@ -78,7 +82,7 @@ const TweetDetail = ({ isSlide }: TweetDetailProps) => {
 						zIndex: 11,
 					}}
 				>
-					<IconButton component={Link} to={"/"}>
+					<IconButton onClick={goBack}>
 						<ArrowBackIcon />
 					</IconButton>
 					<Box sx={{ ml: "10px" }}>
@@ -215,7 +219,7 @@ const TweetDetail = ({ isSlide }: TweetDetailProps) => {
 					borderBottom: "solid 1px #cacaca",
 				}}
 			>
-				<Tooltips fontSize="30px" color="" />
+				{/* <Tooltips tweetId={tweetId as string} fontSize="30px" color="" /> */}
 			</Box>
 			<Box
 				component="form"
@@ -486,7 +490,11 @@ const TweetDetail = ({ isSlide }: TweetDetailProps) => {
 									padding: "10px 0",
 								}}
 							>
-								<Tooltips fontSize="20px" color="" />
+								{/* <Tooltips
+									tweetId={tweetId as string}
+									fontSize="20px"
+									color=""
+								/> */}
 							</Box>
 						</Box>
 					</ListItem>
