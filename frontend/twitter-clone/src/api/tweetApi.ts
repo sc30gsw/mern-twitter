@@ -14,16 +14,16 @@ const tweetApi = {
 	searchUserTweets: (username: string) =>
 		axiosClient.post("tweet/searchUserTweets", { username }),
 	// リツイート作成API
-	createRetweet: (params: { userId: string; tweetId: string }) =>
-		axiosClient.post("tweet/createRetweet", params),
+	createRetweet: (params: {
+		userId: string;
+		tweetId: string;
+		originalTweetId: string | undefined;
+	}) => axiosClient.post("tweet/createRetweet", params),
 	// リツイート削除API
 	deleteRetweet: (tweetId: string, originalTweetId: string) =>
 		axiosClient.delete("tweet/deleteRetweet", {
 			params: { tweetId: tweetId, originalTweetId: originalTweetId },
 		}),
-	// リツイート件数取得API
-	countRetweet: (tweetId: string) =>
-		axiosClient.post("tweet/countRetweet", { tweetId }),
 };
 
 export default tweetApi;

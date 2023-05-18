@@ -1,4 +1,4 @@
-import { IconButton, Tooltip } from "@mui/material";
+import { Box, IconButton, Tooltip, Typography } from "@mui/material";
 import ModeCommentOutlinedIcon from "@mui/icons-material/ModeCommentOutlined";
 import RepeatOutlinedIcon from "@mui/icons-material/RepeatOutlined";
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
@@ -27,31 +27,28 @@ const Tooltips = ({
 }: TooltipsProps) => {
 	const { user } = useUserContext();
 	const { setTweets } = useTweetContext();
-	const [count, setCount] = useState<number>(0);
+
+	const [hover, setHover] = useState<boolean>(false);
 
 	const handleRetweet = async () => {
 		try {
 			if (
 				retweetUsers.length > 0 &&
-				retweetUsers.includes(user?._id as string)
+				retweetUsers.includes(user?._id as string) &&
+				userId === user?._id
 			) {
 				await tweetApi.deleteRetweet(tweetId, originalTweetId);
 				console.log("リツイートを削除しました");
 			} else if (!retweetUsers.includes(user?._id as string)) {
 				await tweetApi.createRetweet({
 					userId,
-					tweetId: originalTweetId ? originalTweetId : tweetId,
+					tweetId: tweetId,
+					originalTweetId: originalTweetId ? originalTweetId : undefined,
 				});
 				console.log("リツートに成功しました");
 			} else {
-				alert("リツイート済みツイート");
+				alert("自分の投稿からリツイート削除してください");
 			}
-
-			const retweetCount = await tweetApi.countRetweet(
-				originalTweetId ? originalTweetId : tweetId
-			);
-
-			console.log(retweetCount);
 
 			const res = await tweetApi.search();
 			setTweets(res.data);
@@ -67,17 +64,50 @@ const Tooltips = ({
 					<ModeCommentOutlinedIcon sx={{ fontSize: fontSize }} />
 				</IconButton>
 			</Tooltip>
-			<Tooltip title="Retweet">
-				<IconButton
+			<Tooltip
+				title={
+					retweetUsers.includes(user?._id as string)
+						? "Undo Retweet"
+						: "Retweet"
+				}
+			>
+				<Box
 					sx={{
-						color: retweetUsers.includes(user?._id as string)
-							? "rgb(0, 186, 124)"
-							: color,
+						display: "flex",
+						alignItems: "center",
 					}}
-					onClick={handleRetweet}
+					onMouseEnter={() => setHover(true)}
+					onMouseLeave={() => setHover(false)}
 				>
-					<RepeatOutlinedIcon sx={{ fontSize: fontSize }} />
-				</IconButton>
+					<IconButton
+						sx={{
+							color:
+								hover || retweetUsers.includes(user?._id as string)
+									? "rgb(0, 186, 124)"
+									: color,
+							background: hover ? "rgba(151, 199, 183, 0.472)" : "",
+							":hover": {
+								background: "rgba(151, 199, 183, 0.472)",
+							},
+						}}
+						onClick={handleRetweet}
+					>
+						<RepeatOutlinedIcon sx={{ fontSize: fontSize }} />
+					</IconButton>
+					<Typography
+						sx={{
+							color:
+								hover || retweetUsers.includes(user?._id as string)
+									? "rgb(0, 186, 124)"
+									: "#898989",
+							":hover": {
+								cursor: "pointer",
+							},
+						}}
+					>
+						{retweetUsers.length > 0 && retweetUsers.length}
+					</Typography>
+				</Box>
 			</Tooltip>
 			<Tooltip title="Like">
 				<IconButton sx={{ color: color }}>
