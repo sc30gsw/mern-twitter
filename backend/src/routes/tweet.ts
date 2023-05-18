@@ -1,9 +1,10 @@
 import express from "express";
 import {
-	countRetweet,
 	create,
 	createRetweet,
 	deleteRetweet,
+	getTweet,
+	getViewCount,
 	searchTweets,
 	searchUserTweets,
 } from "../services/tweetService";
@@ -40,6 +41,20 @@ router.post(
 	}
 );
 
+// ツイートビュー数取得APIの呼出
+router.put("/:tweetId/view", (req: express.Request, res: express.Response) => {
+	getViewCount(req, res);
+});
+
+// ツイート詳細取得APIの呼出
+router.get(
+	"/:tweetId",
+	verifyToken,
+	(req: express.Request, res: express.Response) => {
+		getTweet(req, res);
+	}
+);
+
 // リツイート作成APIの呼出
 router.post(
 	"/createRetweet",
@@ -57,15 +72,6 @@ router.delete(
 	verifyToken,
 	(req: express.Request, res: express.Response) => {
 		deleteRetweet(req, res);
-	}
-);
-
-// リツイート件数取得APIの呼出
-router.post(
-	"/countRetweet",
-	verifyToken,
-	(req: express.Request, res: express.Response) => {
-		countRetweet(req, res);
 	}
 );
 
