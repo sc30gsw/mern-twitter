@@ -15,9 +15,14 @@ import noAvatar from "../../assets/images/noAvatar.png";
 import ImageIcon from "@mui/icons-material/Image";
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 import { LoadingButton } from "@mui/lab";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styled from "@emotion/styled";
 import Tooltips from "./Items/Tooltips";
+import tweetApi from "../../api/tweetApi";
+import { Tweet } from "../../types/Tweet";
+import TweetImageDialog from "./dialog/TweetImageDialog";
+import { useTweetContext } from "../../contexts/TweetProvider";
+import { useUserContext } from "../../contexts/UserProvider";
 
 interface ITweetImage {
 	imageCount: number;
@@ -46,7 +51,7 @@ const getImageStyle = (imageCount: number) => {
 		case 3:
 		case 4:
 			return {
-				width: "calc(50% - 4px)", // 4px はマージンを考慮した値です
+				width: "calc(50% - 4px)",
 				height: "auto",
 			};
 		default:
@@ -54,17 +59,86 @@ const getImageStyle = (imageCount: number) => {
 	}
 };
 
-type TweetDetailProps = {
-	isSlide: boolean;
-};
+const IMAGE_URL = process.env.REACT_APP_IMAGE_URL as string;
 
-const TweetDetail = ({ isSlide }: TweetDetailProps) => {
+const TweetDetail = () => {
+	const { user } = useUserContext();
 	const { tweetId } = useParams();
 	const navigate = useNavigate();
 	const goBack = () => navigate(-1);
 
+	const [tweet, setTweet] = useState<Tweet>();
 	const [loading, setLoading] = useState<boolean>(false);
 	const [isInputEmpty, setIsInputEmpty] = useState<boolean>(true);
+	const [open, setOpen] = useState<boolean>(false);
+	const [selectedTweetId, setSelectedTweetId] = useState<string>("");
+	const [tweetUserId, setTweetUserId] = useState<string>("");
+	const [selectedImages, setSelectedImages] = useState<string[]>([]);
+	const [originalTweetId, setOriginalTweetId] = useState<string>("");
+	const [retweetUserIds, setRetweetUserIds] = useState<string[]>([]);
+	const [initialImageIndex, setInitialImageIndex] = useState<number>(0);
+
+	useEffect(() => {
+		const getTweet = async () => {
+			setLoading(true);
+			setTweet(undefined);
+			try {
+				const res = await tweetApi.getTweet(tweetId as string);
+				console.log(res.data);
+				console.log("ツイート詳細を取得しました");
+				setTweet(res.data[0]);
+				setLoading(false);
+			} catch (err) {
+				console.log(err);
+				setLoading(false);
+			}
+		};
+
+		getTweet();
+	}, [tweetId]);
+
+	const formatDate = (date: Date) => {
+		const options = {
+			hour: "2-digit",
+			minute: "2-digit",
+			year: "numeric",
+			month: "long",
+			day: "numeric",
+			hour12: true,
+		} as const;
+
+		const formattedDate = new Date(date).toLocaleString("en-US", options);
+
+		const [datePart, timePart] = formattedDate.split(" at ");
+		return `${timePart} · ${datePart}`;
+	};
+
+	const handleDialogOpen = (
+		tweetId: string,
+		userId: string,
+		images: string[],
+		originalTweetId: string,
+		retweetUsers: string[],
+		index: number
+	) => {
+		setOpen(true);
+		setSelectedTweetId(tweetId);
+		setTweetUserId(userId);
+		setSelectedImages(images);
+		setOriginalTweetId(originalTweetId);
+		setRetweetUserIds(retweetUsers);
+		setInitialImageIndex(index);
+	};
+
+	const handleDialogClose = () => {
+		setOpen(false);
+		setSelectedTweetId("");
+		setTweetUserId("");
+		setSelectedImages([]);
+		setRetweetUserIds([]);
+		setInitialImageIndex(0);
+	};
+
 	return (
 		<>
 			<Box
@@ -95,8 +169,26 @@ const TweetDetail = ({ isSlide }: TweetDetailProps) => {
 					sx={{ ml: "10px", display: "flex", justifyContent: "space-between" }}
 				>
 					<Box sx={{ display: "flex", alignItems: "center" }}>
-						<IconButton component={Link} to={"/"}>
-							<Avatar />
+						<IconButton
+							component={Link}
+							to={`/user/${
+								tweet?.retweet && Object.keys(tweet.retweet).length !== 0
+									? tweet.retweet.originalUser?.username.replace("@", "")
+									: tweet?.user.username.replace("@", "")
+							}`}
+						>
+							<Avatar
+								alt={
+									tweet?.retweet && Object.keys(tweet.retweet).length !== 0
+										? tweet.retweet.originalUser?.profileName
+										: tweet?.user.profileName
+								}
+								src={
+									tweet?.retweet && Object.keys(tweet.retweet).length !== 0
+										? IMAGE_URL + tweet.retweet.originalUser?.icon
+										: IMAGE_URL + tweet?.user.icon
+								}
+							/>
 						</IconButton>
 						<Box
 							sx={{
@@ -115,10 +207,16 @@ const TweetDetail = ({ isSlide }: TweetDetailProps) => {
 								color="text.primary"
 							>
 								<Link
-									to={`/user/`}
+									to={`/user/${
+										tweet?.retweet && Object.keys(tweet.retweet).length !== 0
+											? tweet.retweet.originalUser?.username.replace("@", "")
+											: tweet?.user.username.replace("@", "")
+									}`}
 									style={{ color: "black", textDecoration: "none" }}
 								>
-									プロフィール名前
+									{tweet?.retweet && Object.keys(tweet.retweet).length !== 0
+										? tweet.retweet.originalUser?.profileName
+										: tweet?.user.profileName}
 								</Link>
 							</Typography>
 							<Typography
@@ -128,8 +226,18 @@ const TweetDetail = ({ isSlide }: TweetDetailProps) => {
 									color: "#898989",
 								}}
 							>
-								{/* {tweet.user.username}・{formatDate(tweet.updatedAt)} */}
-								ユーザー名
+								<Link
+									to={`/user/${
+										tweet?.retweet && Object.keys(tweet.retweet).length !== 0
+											? tweet.retweet.originalUser?.username.replace("@", "")
+											: tweet?.user.username.replace("@", "")
+									}`}
+									style={{ color: "#898989", textDecoration: "none" }}
+								>
+									{tweet?.retweet && Object.keys(tweet.retweet).length !== 0
+										? tweet.retweet.originalUser?.username
+										: tweet?.user.username}
+								</Link>
 							</Typography>
 						</Box>
 					</Box>
@@ -149,21 +257,46 @@ const TweetDetail = ({ isSlide }: TweetDetailProps) => {
 					borderBottom: "solid 1px #cacaca",
 				}}
 			>
-				{/* <Typography>{tweet.content}</Typography> */}
-				<Typography>
-					自分が見てほしいアウトプットツイートには全然いいね来ないのに、くさい自己啓発ツイートにはめっちゃいいねつくの悲しい
-					全然本質的にじゃないけど、他人受け良さそうなくさい自己啓発ツイートした方が評判良くなるそうした方がええんか？
-				</Typography>
-				{isSlide || <></>}
-				{/* {tweet.tweetImage.map((image, index) => (
+				<Typography>{tweet?.content}</Typography>
+				{tweet?.retweet && Object.keys(tweet?.retweet).length !== 0
+					? tweet?.retweet.originalTweetImage.map((image, index) => (
+							<TweetImage
+								key={image + index}
+								src={IMAGE_URL + image}
+								alt={image}
+								imageCount={tweet.retweet.originalTweetImage.length}
+								onClick={() => {
+									handleDialogOpen(
+										tweet._id,
+										tweet.userId,
+										tweet.retweet.originalTweetImage,
+										tweet.retweet.originalTweetId,
+										tweet.retweetUsers,
+										index
+									);
+								}}
+							/>
+					  ))
+					: tweet?.tweetImage.map((image, index) => (
 							<TweetImage
 								key={image + index}
 								src={IMAGE_URL + image}
 								alt={image}
 								imageCount={tweet.tweetImage.length}
+								onClick={() => {
+									handleDialogOpen(
+										tweet._id,
+										tweet.userId,
+										tweet.tweetImage,
+										tweet.retweet && Object.keys(tweet.retweet).length !== 0
+											? tweet.retweet.originalTweetId
+											: "",
+										tweet.retweetUsers,
+										index
+									);
+								}}
 							/>
-						))} */}
-
+					  ))}
 				<Typography
 					variant="body1"
 					mt={2}
@@ -172,14 +305,14 @@ const TweetDetail = ({ isSlide }: TweetDetailProps) => {
 						color: "#898989",
 					}}
 				>
-					{/* {tweet.user.username}・{formatDate(tweet.updatedAt)} */}
-					7:27 PM・May 11,2023・
+					{formatDate(tweet?.updatedAt as Date)} ・
 					<Typography
 						variant="body1"
 						mr={"5px"}
+						ml={"5px"}
 						sx={{ color: "black", fontWeight: "bold" }}
 					>
-						3,902
+						{tweet?.viewCount}
 					</Typography>
 					Views
 				</Typography>
@@ -193,10 +326,11 @@ const TweetDetail = ({ isSlide }: TweetDetailProps) => {
 				}}
 			>
 				<Typography variant="body1" mr={1} sx={{ fontWeight: "bold" }}>
-					1
+					{(tweet?.retweetUsers.length as number) > 0 &&
+						tweet?.retweetUsers.length}
 				</Typography>
 				<Typography variant="body1" ml={"1px"} sx={{ color: "#898989" }}>
-					Retweet
+					{(tweet?.retweetUsers.length as number) > 0 && "Retweet"}
 				</Typography>
 				<Typography
 					variant="body1"
@@ -210,17 +344,32 @@ const TweetDetail = ({ isSlide }: TweetDetailProps) => {
 					Likes
 				</Typography>
 			</Box>
-			<Box
-				sx={{
-					display: "flex",
-					justifyContent: "space-around",
-					padding: "10px 0",
-					ml: "20px",
-					borderBottom: "solid 1px #cacaca",
-				}}
-			>
-				{/* <Tooltips tweetId={tweetId as string} fontSize="30px" color="" /> */}
-			</Box>
+			{tweet?.retweet && Object.keys(tweet.retweet).length !== 0 ? (
+				<Box
+					sx={{
+						display: "flex",
+						justifyContent: "space-around",
+						padding: "10px 0",
+						ml: "20px",
+						borderBottom: "solid 1px #cacaca",
+					}}
+				>
+					<Tooltips
+						userId={tweet?.userId as string}
+						tweetId={tweet?._id as string}
+						originalTweetId={
+							tweet?.retweet && Object.keys(tweet.retweet).length !== 0
+								? tweet.retweet.originalTweetId
+								: ""
+						}
+						fontSize="20px"
+						color=""
+						retweetUsers={tweet?.retweetUsers ? tweet.retweetUsers : []}
+					/>
+				</Box>
+			) : (
+				<></>
+			)}
 			<Box
 				component="form"
 				encType="multipart/form-data"
@@ -233,10 +382,9 @@ const TweetDetail = ({ isSlide }: TweetDetailProps) => {
 					borderBottom: "solid 1px #cacaca",
 				}}
 			>
-				<Link to={`/`}>
+				<Link to={`/user/${user?.username}`}>
 					<Avatar
-						// src={user?.icon ? IMAGE_URL + user?.icon : noAvatar}
-						src={noAvatar}
+						src={user?.icon ? IMAGE_URL + user?.icon : noAvatar}
 						alt="noAvatar"
 						sx={{ mt: "20px", mr: "10px" }}
 					/>
@@ -287,44 +435,6 @@ const TweetDetail = ({ isSlide }: TweetDetailProps) => {
 							</LoadingButton>
 						)}
 					</Box>
-					{/* 画像プレビュー */}
-					{/* <Box sx={{ display: "flex", flexWrap: "wrap", position: "relative" }}>
-						{imagePreviews.map((imagePreview, index) => (
-							<Box
-								key={index}
-								sx={{
-									position: "relative",
-									width: "100px",
-									height: "100px",
-									margin: "5px",
-								}}
-							>
-								<IconButton
-									sx={{
-										position: "absolute",
-										left: -10,
-										top: -5,
-										background: "#6f7070",
-										color: "white",
-										":hover": {
-											background: "#6f7070",
-											opacity: 0.7,
-										},
-									}}
-									onClick={() => handleImageRemove(imagePreview)}
-								>
-									<CloseIcon />
-								</IconButton>
-								<img
-									src={imagePreview}
-									alt={`tweet_image_${index}`}
-									width="100"
-									height="100"
-									style={{ objectFit: "cover" }}
-								/>
-							</Box>
-						))}
-					</Box> */}
 					<Box
 						sx={{
 							display: "flex",
@@ -500,6 +610,16 @@ const TweetDetail = ({ isSlide }: TweetDetailProps) => {
 					</ListItem>
 				</List>
 			</Box>
+			<TweetImageDialog
+				open={open}
+				onClose={handleDialogClose}
+				images={selectedImages}
+				initialImageIndex={initialImageIndex}
+				tweetId={selectedTweetId}
+				userId={tweetUserId}
+				retweetUsers={retweetUserIds}
+				originalTweetId={originalTweetId}
+			/>
 		</>
 	);
 };
