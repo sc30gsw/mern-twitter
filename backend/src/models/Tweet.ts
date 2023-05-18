@@ -55,6 +55,10 @@ const tweetSchema = new mongoose.Schema({
 			type: String,
 		},
 	],
+	viewCount: {
+		type: Number,
+		default: 0,
+	},
 	createdAt: {
 		type: Date,
 		default: Date.now,

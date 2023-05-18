@@ -3,6 +3,7 @@ import ModeCommentOutlinedIcon from "@mui/icons-material/ModeCommentOutlined";
 import RepeatOutlinedIcon from "@mui/icons-material/RepeatOutlined";
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
 import IosShareOutlinedIcon from "@mui/icons-material/IosShareOutlined";
+import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
 import tweetApi from "../../../api/tweetApi";
 import { useTweetContext } from "../../../contexts/TweetProvider";
 import { useEffect, useState } from "react";
@@ -28,7 +29,19 @@ const Tooltips = ({
 	const { user } = useUserContext();
 	const { setTweets } = useTweetContext();
 
+	const [viewCount, setViewCount] = useState<number>(0);
 	const [hover, setHover] = useState<boolean>(false);
+	const [viewHover, setViewHover] = useState<boolean>(false);
+
+	useEffect(() => {
+		const getViewCount = async () => {
+			const res = await tweetApi.getViewCount(
+				originalTweetId ? originalTweetId : tweetId
+			);
+			setViewCount(res.data.viewCount);
+		};
+		getViewCount();
+	}, [tweetId, originalTweetId]);
 
 	const handleRetweet = async () => {
 		try {
@@ -113,6 +126,38 @@ const Tooltips = ({
 				<IconButton sx={{ color: color }}>
 					<FavoriteBorderOutlinedIcon sx={{ fontSize: fontSize }} />
 				</IconButton>
+			</Tooltip>
+			<Tooltip title="View">
+				<Box
+					sx={{
+						display: "flex",
+						alignItems: "center",
+					}}
+					onMouseEnter={() => setViewHover(true)}
+					onMouseLeave={() => setViewHover(false)}
+				>
+					<IconButton
+						sx={{
+							color: viewHover ? "#1DA1F2" : color,
+							background: viewHover ? "#1da0f272" : "",
+							":hover": {
+								background: "#1da0f272",
+							},
+						}}
+					>
+						<BarChartOutlinedIcon sx={{ fontSize: fontSize }} />
+					</IconButton>
+					<Typography
+						sx={{
+							color: viewHover ? "#1DA1F2" : "#898989",
+							":hover": {
+								cursor: "pointer",
+							},
+						}}
+					>
+						{viewCount > 0 && viewCount}
+					</Typography>
+				</Box>
 			</Tooltip>
 			<Tooltip title="Share">
 				<IconButton sx={{ color: color }}>

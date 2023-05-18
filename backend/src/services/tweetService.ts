@@ -148,6 +148,80 @@ export const searchUserTweets = async (
 	}
 };
 
+export const getViewCount = async (
+	req: express.Request,
+	res: express.Response
+) => {
+	try {
+		if (!req.params.tweetId) {
+			return res.status(401).json({
+				errors: [
+					{
+						param: "tweetId",
+						msg: "無効なリクエストです",
+					},
+				],
+			});
+		}
+
+		const tweet = await Tweet.findById(
+			req.params.originalTweetId
+				? req.params.originalTweetId
+				: req.params.tweetId
+		);
+
+		if (!tweet) {
+			return res.status(400).json({
+				errors: [
+					{
+						param: "tweet",
+						msg: "ツイートが存在しません",
+					},
+				],
+			});
+		}
+
+		tweet.viewCount += 1;
+		await tweet.save();
+
+		return res.status(200).json({ viewCount: tweet.viewCount });
+	} catch (err) {
+		return res.status(500).json(err);
+	}
+};
+
+export const getTweet = async (req: express.Request, res: express.Response) => {
+	try {
+		if (!req.params.tweetId) {
+			return res.status(401).json({
+				errors: [
+					{
+						param: "tweetId",
+						msg: "無効なリクエストです",
+					},
+				],
+			});
+		}
+
+		const tweet = await Tweet.findById(req.params.tweetId);
+
+		if (!tweet) {
+			return res.status(400).json({
+				errors: [
+					{
+						param: "tweet",
+						msg: "ツイートが存在しません",
+					},
+				],
+			});
+		}
+
+		return res.status(200).json(tweet);
+	} catch (err) {
+		return res.status(500).json(err);
+	}
+};
+
 export const createRetweet = async (
 	req: express.Request,
 	res: express.Response

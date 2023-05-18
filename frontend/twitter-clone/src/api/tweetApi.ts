@@ -13,6 +13,8 @@ const tweetApi = {
 	// ユーザーツイート一覧取得API
 	searchUserTweets: (username: string) =>
 		axiosClient.post("tweet/searchUserTweets", { username }),
+	// ツイートビュー数取得API
+	getViewCount: (tweetId: string) => axiosClient.put(`tweet/${tweetId}/view`),
 	// リツイート作成API
 	createRetweet: (params: {
 		userId: string;
