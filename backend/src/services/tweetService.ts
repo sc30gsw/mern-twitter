@@ -216,7 +216,43 @@ export const getTweet = async (req: express.Request, res: express.Response) => {
 			});
 		}
 
-		return res.status(200).json(tweet);
+		const query: any = [
+			{
+				$lookup: {
+					from: "users",
+					localField: "userId",
+					foreignField: "_id",
+					as: "user",
+				},
+			},
+			{
+				$lookup: {
+					from: "users",
+					localField: "retweet.originalUser",
+					foreignField: "_id",
+					as: "retweet.originalUser",
+				},
+			},
+			{ $match: { _id: tweet._id, "user._id": tweet.userId } },
+			{ $unwind: "$user" },
+			{
+				$unwind: {
+					path: "$retweet.originalUser",
+					preserveNullAndEmptyArrays: true,
+				},
+			},
+			{
+				$project: {
+					"user.password": false,
+					"user.resetPasswordToken": false,
+					"user.resetPasswordExpires": false,
+				},
+			},
+		];
+
+		const tweetWithUser = await Tweet.aggregate(query);
+
+		return res.status(200).json(tweetWithUser);
 	} catch (err) {
 		return res.status(500).json(err);
 	}
