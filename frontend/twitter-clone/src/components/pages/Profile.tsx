@@ -15,16 +15,16 @@ import { useEffect, useState } from "react";
 import EditProfileDialog from "./dialog/EditProfileDialog";
 import { useTweetContext } from "../../contexts/TweetProvider";
 import tweetApi from "../../api/tweetApi";
-import { TweetUser } from "../../types/User";
+import { useUserContext } from "../../contexts/UserProvider";
 
 const IMAGE_URL = process.env.REACT_APP_IMAGE_URL as string;
 
 const Profile = () => {
 	const pathname = useLocation().pathname;
+	const { user, setUser } = useUserContext();
 	const { tweets, setTweets } = useTweetContext();
 
 	const [loading, setLoading] = useState<boolean>(true);
-	const [user, setUser] = useState<TweetUser | null>(null);
 	const [tabValue, setTabValue] = useState<number>(0);
 	const [open, setOpen] = useState<boolean>(false);
 
@@ -33,7 +33,7 @@ const Profile = () => {
 			try {
 				const username = pathname.replace("/user/", "");
 
-				const res = await tweetApi.searchUserTweets(username);
+				const res = await tweetApi.searchUserTweets(`@${username}`);
 				if (res.data.length > 0) {
 					setUser(res.data[0].user);
 					setTweets(res.data);
@@ -50,7 +50,7 @@ const Profile = () => {
 		};
 
 		getUserTweets();
-	}, [pathname, setTweets]);
+	}, [pathname, setTweets, setUser]);
 
 	const handleTabChange = (e: React.ChangeEvent<any>, newValue: number) =>
 		setTabValue(newValue);

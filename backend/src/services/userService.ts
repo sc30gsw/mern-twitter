@@ -185,7 +185,8 @@ export const updateUser = async (
 	req: express.Request,
 	res: express.Response
 ) => {
-	const { userId, profileName, description } = req.body;
+	const { profileName, description } = req.body;
+	const { userId } = req.params;
 	try {
 		if (!userId) {
 			return res.status(401).json({
@@ -211,8 +212,8 @@ export const updateUser = async (
 			});
 		}
 
-		let profileImgUrl: any = null;
-		let iconUrl: any = null;
+		let profileImgUrl: any;
+		let iconUrl: any;
 
 		const files: any = req.files;
 		if (files) {

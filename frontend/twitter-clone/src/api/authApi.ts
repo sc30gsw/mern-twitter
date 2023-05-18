@@ -1,5 +1,5 @@
 import { LoginUser, User } from "../types/User";
-import { axiosClient } from "./axiosClient";
+import { axiosClient, axiosClientFormData } from "./axiosClient";
 
 const authApi = {
 	// メールチェックAPI
@@ -22,6 +22,13 @@ const authApi = {
 		password: string;
 		confirmPassword: string;
 	}) => axiosClient.post("auth/resetPassword", param),
+	// ユーザー更新API
+	update: (userId: string, formData: FormData) =>
+		axiosClientFormData.patch(`auth/update/${userId}`, formData, {
+			headers: {
+				"Content-Type": "multipart/form-data",
+			},
+		}),
 };
 
 export default authApi;

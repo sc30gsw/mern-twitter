@@ -96,7 +96,7 @@ router.post(
 
 // ユーザー更新APIの呼出
 router.patch(
-	"/update",
+	"/update/:userId",
 	upload.fields([{ name: "profileImg" }, { name: "icon" }]),
 	(req: express.Request, res: express.Response) => {
 		updateUser(req, res);
