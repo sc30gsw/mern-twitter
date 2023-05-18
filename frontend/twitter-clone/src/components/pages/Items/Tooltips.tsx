@@ -8,6 +8,7 @@ import tweetApi from "../../../api/tweetApi";
 import { useTweetContext } from "../../../contexts/TweetProvider";
 import { useEffect, useState } from "react";
 import { useUserContext } from "../../../contexts/UserProvider";
+import { useNavigate } from "react-router-dom";
 
 type TooltipsProps = {
 	userId: string;
@@ -28,6 +29,7 @@ const Tooltips = ({
 }: TooltipsProps) => {
 	const { user } = useUserContext();
 	const { setTweets } = useTweetContext();
+	const navigate = useNavigate();
 
 	const [viewCount, setViewCount] = useState<number>(0);
 	const [hover, setHover] = useState<boolean>(false);
@@ -48,10 +50,12 @@ const Tooltips = ({
 			if (
 				retweetUsers.length > 0 &&
 				retweetUsers.includes(user?._id as string) &&
-				userId === user?._id
+				userId === user?._id &&
+				originalTweetId
 			) {
 				await tweetApi.deleteRetweet(tweetId, originalTweetId);
 				console.log("リツイートを削除しました");
+				navigate("/");
 			} else if (!retweetUsers.includes(user?._id as string)) {
 				await tweetApi.createRetweet({
 					userId,
@@ -60,7 +64,7 @@ const Tooltips = ({
 				});
 				console.log("リツートに成功しました");
 			} else {
-				alert("自分の投稿からリツイート削除してください");
+				alert("自分の投稿からリツイートした投稿を削除してください");
 			}
 
 			const res = await tweetApi.search();
