@@ -4,12 +4,16 @@ import TweetList from "./TweetList";
 import { useEffect, useState } from "react";
 import { useTweetContext } from "../../contexts/TweetProvider";
 import tweetApi from "../../api/tweetApi";
-import { useTweetBoxDialogContext } from "../../contexts/TweetBoxDialogProvider";
+import {
+	useEditTweetBoxDialogContext,
+	useTweetBoxDialogContext,
+} from "../../contexts/TweetBoxDialogProvider";
 
 const Home = () => {
 	const { tweets, setTweets } = useTweetContext();
 	const [loading, setLoading] = useState<boolean>(true);
 	const { openDialog } = useTweetBoxDialogContext();
+	const { editOpenDialog } = useEditTweetBoxDialogContext();
 
 	useEffect(() => {
 		const getTweets = async () => {
@@ -42,7 +46,11 @@ const Home = () => {
 			) : (
 				<>
 					<Typography variant="h5">ホーム</Typography>
-					{openDialog || <TweetBox rows={undefined} onClose={() => {}} />}
+					{openDialog || editOpenDialog ? (
+						<></>
+					) : (
+						<TweetBox rows={undefined} onClose={() => {}} />
+					)}
 					<TweetList tweets={tweets} />
 				</>
 			)}

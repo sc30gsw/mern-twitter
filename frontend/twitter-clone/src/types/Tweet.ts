@@ -5,6 +5,7 @@ type Retweet = {
 	originalUser: TweetUser;
 	originalContent: string;
 	originalTweetImage: string[];
+	originalUpdatedCount: number;
 	originalCreatedAt: Date;
 	originalUpdatedAt: Date;
 };
@@ -17,6 +18,7 @@ export type Tweet = {
 	retweet: Retweet;
 	retweetUsers: string[];
 	viewCount: number;
+	updatedCount: number;
 	createdAt: Date;
 	updatedAt: Date;
 	__v: number;

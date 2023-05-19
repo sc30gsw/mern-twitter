@@ -1,10 +1,22 @@
-import { Box, Typography, List, IconButton } from "@mui/material";
+import {
+	Box,
+	Typography,
+	List,
+	IconButton,
+	Menu,
+	MenuItem,
+	ListItemIcon,
+} from "@mui/material";
 import ListItem from "@mui/material/ListItem";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
 import Avatar from "@mui/material/Avatar";
 import { Link } from "react-router-dom";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import ModeEditOutlineOutlinedIcon from "@mui/icons-material/ModeEditOutlineOutlined";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import PopupState, { bindTrigger, bindMenu } from "material-ui-popup-state";
 import { Tweet } from "../../types/Tweet";
 import { styled } from "@mui/system";
 import tweetApi from "../../api/tweetApi";
@@ -66,6 +78,9 @@ const TweetList = ({ tweets }: TweetListProps) => {
 	const [originalTweetId, setOriginalTweetId] = useState<string>("");
 	const [retweetUserIds, setRetweetUserIds] = useState<string[]>([]);
 	const [initialImageIndex, setInitialImageIndex] = useState<number>(0);
+
+	const currentTime = new Date();
+	const thirtyMinutesAgo = new Date(currentTime.getTime() - 30 * 60 * 1000);
 
 	const formatDate = (updatedAt: Date) => {
 		const now = new Date();
@@ -272,9 +287,65 @@ const TweetList = ({ tweets }: TweetListProps) => {
 											</Typography>
 										</Box>
 										<Box>
-											<IconButton>
-												<MoreHorizIcon />
-											</IconButton>
+											<PopupState variant="popover" popupId="demo-popup-menu">
+												{(popupState) => (
+													<>
+														<IconButton {...bindTrigger(popupState)}>
+															<MoreHorizIcon />
+														</IconButton>
+														<Menu {...bindMenu(popupState)}>
+															{tweet.userId === user?._id &&
+															!tweet.retweetUsers.includes(user?._id) ? (
+																<MenuItem onClick={popupState.close}>
+																	<ListItemIcon>
+																		<DeleteOutlineOutlinedIcon
+																			sx={{ color: "red" }}
+																		/>
+																	</ListItemIcon>
+																	<Typography
+																		variant="inherit"
+																		sx={{ color: "red" }}
+																	>
+																		Delete
+																	</Typography>
+																</MenuItem>
+															) : (
+																<Box></Box>
+															)}
+															{(tweet.userId === user?._id &&
+																!tweet.retweetUsers.includes(user?._id) &&
+																tweet.updatedCount >= 5) ||
+															new Date(tweet.createdAt).getTime() >
+																thirtyMinutesAgo.getTime() ? (
+																<MenuItem
+																	component={Link}
+																	to={`/editTweet/${tweet._id}`}
+																>
+																	<ListItemIcon>
+																		<ModeEditOutlineOutlinedIcon />
+																	</ListItemIcon>
+																	<Typography variant="inherit">
+																		Edit
+																	</Typography>
+																</MenuItem>
+															) : (
+																<Box></Box>
+															)}
+															<MenuItem
+																component={Link}
+																to={`/tweet/${tweet._id}`}
+															>
+																<ListItemIcon>
+																	<InfoOutlinedIcon />
+																</ListItemIcon>
+																<Typography variant="inherit">
+																	Detail
+																</Typography>
+															</MenuItem>
+														</Menu>
+													</>
+												)}
+											</PopupState>
 										</Box>
 									</Box>
 									<Link

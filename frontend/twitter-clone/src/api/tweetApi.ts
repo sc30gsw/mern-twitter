@@ -8,6 +8,13 @@ const tweetApi = {
 				"Content-Type": "multipart/form-data",
 			},
 		}),
+	// ツイート更新API
+	update: (tweetId: string, formData: FormData) =>
+		axiosClientFormData.patch(`tweet/update/${tweetId}`, formData, {
+			headers: {
+				"Content-Type": "multipart/form-data",
+			},
+		}),
 	// ツイート一覧検索API
 	search: (content?: string) => axiosClient.post("tweet/search", { content }),
 	// ユーザーツイート一覧取得API
