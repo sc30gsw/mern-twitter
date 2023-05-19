@@ -6,7 +6,6 @@ import ArrowForwardOutlinedIcon from "@mui/icons-material/ArrowForwardOutlined";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import { useEffect, useState } from "react";
 import Tooltips from "../Items/Tooltips";
-import TweetDetail from "../Tweet";
 
 const IMAGE_URL = process.env.REACT_APP_IMAGE_URL as string;
 
@@ -32,7 +31,6 @@ const TweetImageDialog = ({
 	originalTweetId,
 }: TweetImageDialogProps) => {
 	const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
-	const [toggleOpen, setToggleOpen] = useState<boolean>(false);
 
 	useEffect(() => {
 		if (open) {
@@ -53,7 +51,6 @@ const TweetImageDialog = ({
 	const onCloseWithExtraFunc = () => {
 		onClose();
 		setCurrentImageIndex(0);
-		setToggleOpen(false);
 	};
 
 	return (
@@ -74,20 +71,8 @@ const TweetImageDialog = ({
 							<CloseIcon />
 						</IconButton>
 					</Tooltip>
-					<Tooltip title="Show">
-						<IconButton
-							sx={{ color: "white" }}
-							onClick={() => setToggleOpen(!toggleOpen)}
-						>
-							{toggleOpen ? (
-								<KeyboardDoubleArrowLeftOutlinedIcon />
-							) : (
-								<KeyboardDoubleArrowRightOutlinedIcon />
-							)}
-						</IconButton>
-					</Tooltip>
 				</Box>
-				<Box sx={{ display: toggleOpen ? "flex" : "block" }}>
+				<Box>
 					<Box sx={{ mt: 10 }}>
 						<Box
 							sx={{
@@ -101,7 +86,7 @@ const TweetImageDialog = ({
 								alt="noImage"
 								style={{
 									height: "600px",
-									width: toggleOpen ? "450px" : "100%",
+									width: "100%",
 									transition: "opacity 1s ease-in-out",
 								}}
 							/>
@@ -143,18 +128,6 @@ const TweetImageDialog = ({
 							)}
 						</Box>
 					</Box>
-					{toggleOpen && (
-						<Box
-							sx={{
-								zIndex: 100,
-								height: "100%",
-								width: "70%",
-								background: "#fff",
-							}}
-						>
-							<TweetDetail />
-						</Box>
-					)}
 				</Box>
 				<Box
 					sx={{
