@@ -21,14 +21,14 @@ import Sign from "./Sign";
 import { useState } from "react";
 import TweetBoxDialog from "./dialog/TweetBoxDialog";
 import { useUserContext } from "../../contexts/UserProvider";
+import { useTweetBoxDialogContext } from "../../contexts/TweetBoxDialogProvider";
 
 const Sidebar = () => {
 	// 現在のルートを取得
 	const location = useLocation();
 
 	const { user } = useUserContext();
-
-	const [openDialog, setOpenDialog] = useState<boolean>(false);
+	const { openDialog, setOpenDialog } = useTweetBoxDialogContext();
 
 	const isSmallScreen = useMediaQuery("(max-width:1000px)");
 

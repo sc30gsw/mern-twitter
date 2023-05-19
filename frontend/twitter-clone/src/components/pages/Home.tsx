@@ -1,13 +1,15 @@
-import { Box, CircularProgress } from "@mui/material";
+import { Box, CircularProgress, Typography } from "@mui/material";
 import TweetBox from "./TweetBox";
 import TweetList from "./TweetList";
 import { useEffect, useState } from "react";
 import { useTweetContext } from "../../contexts/TweetProvider";
 import tweetApi from "../../api/tweetApi";
+import { useTweetBoxDialogContext } from "../../contexts/TweetBoxDialogProvider";
 
 const Home = () => {
 	const { tweets, setTweets } = useTweetContext();
 	const [loading, setLoading] = useState<boolean>(true);
+	const { openDialog } = useTweetBoxDialogContext();
 
 	useEffect(() => {
 		const getTweets = async () => {
@@ -39,7 +41,8 @@ const Home = () => {
 				</Box>
 			) : (
 				<>
-					<TweetBox title={"ホーム"} rows={undefined} onClose={() => {}} />
+					<Typography variant="h5">ホーム</Typography>
+					{openDialog || <TweetBox rows={undefined} onClose={() => {}} />}
 					<TweetList tweets={tweets} />
 				</>
 			)}

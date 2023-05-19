@@ -20,12 +20,11 @@ import { Link } from "react-router-dom";
 const IMAGE_URL = process.env.REACT_APP_IMAGE_URL as string;
 
 type TweetBoxPropsType = {
-	title: string | undefined;
 	rows: number | undefined;
 	onClose: () => void;
 };
 
-const TweetBox = ({ title, rows, onClose }: TweetBoxPropsType) => {
+const TweetBox = ({ rows, onClose }: TweetBoxPropsType) => {
 	const { user } = useUserContext();
 	const { setTweets } = useTweetContext();
 	const [loading, setLoading] = useState<boolean>(false);
@@ -128,7 +127,6 @@ const TweetBox = ({ title, rows, onClose }: TweetBoxPropsType) => {
 
 	return (
 		<Box>
-			<Typography variant="h5">{title}</Typography>
 			<Box
 				component="form"
 				encType="multipart/form-data"
