@@ -12,7 +12,7 @@ import { LoadingButton } from "@mui/lab";
 import { useUserContext } from "../../../contexts/UserProvider";
 import CloseIcon from "@mui/icons-material/Close";
 import AddAPhotoIcon from "@mui/icons-material/AddAPhoto";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import EditConfirmDialog from "./EditConfirmDialog";
 import authApi from "../../../api/authApi";
 
@@ -50,7 +50,6 @@ const EditProfileDialog = ({ open, onClose }: EditProfileDialogProps) => {
 		setIsEdit(true);
 		if (e.target.files) {
 			const file = e.target.files[0];
-			console.log(file);
 			setProfileImg(file);
 			setProfileImgPreview(URL.createObjectURL(file));
 		}
