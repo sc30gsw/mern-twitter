@@ -134,7 +134,7 @@ const TweetBox = ({ rows, onClose }: TweetBoxPropsType) => {
 				onSubmit={handleSubmit}
 				sx={{ display: "flex", mr: "10px", maxWidth: 500 }}
 			>
-				<Link to={`/${user?.username.split("@").join("")}`}>
+				<Link to={`/user/${user?.username.split("@").join("")}`}>
 					<Avatar
 						src={user?.icon ? IMAGE_URL + user?.icon : noAvatar}
 						alt="noAvatar"
