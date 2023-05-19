@@ -18,7 +18,6 @@ import {
 import { Link, useLocation } from "react-router-dom";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Sign from "./Sign";
-import { useState } from "react";
 import TweetBoxDialog from "./dialog/TweetBoxDialog";
 import { useUserContext } from "../../contexts/UserProvider";
 import { useTweetBoxDialogContext } from "../../contexts/TweetBoxDialogProvider";
