@@ -1,7 +1,5 @@
 import express from "express";
 import Tweet from "../models/Tweet";
-import User from "../models/User";
-import { ObjectId } from "mongoose-typescript";
 
 export const create = async (req: express.Request, res: express.Response) => {
 	try {
@@ -27,6 +25,99 @@ export const create = async (req: express.Request, res: express.Response) => {
 		});
 
 		return res.status(201).json(tweet);
+	} catch (err) {
+		console.log(err);
+		return res.status(500).json(err);
+	}
+};
+
+export const update = async (req: express.Request, res: express.Response) => {
+	const { tweetId } = req.params;
+
+	try {
+		if (!req.user?.id) {
+			return res.status(401).json({
+				errors: [
+					{
+						param: "userId",
+						msg: "無効なリクエストです",
+					},
+				],
+			});
+		}
+
+		if (!tweetId) {
+			return res.status(401).json({
+				errors: [
+					{
+						param: "userId",
+						msg: "無効なリクエストです",
+					},
+				],
+			});
+		}
+
+		const tweet = await Tweet.findOne({ _id: tweetId, userId: req.user?.id });
+
+		if (!tweet) {
+			return res.status(404).json({
+				errors: [
+					{
+						param: "tweetId",
+						msg: "指定されたツイートが見つかりません",
+					},
+				],
+			});
+		}
+
+		const currentTime = new Date();
+		const thirtyMinutesAgo = new Date(currentTime.getTime() - 30 * 60 * 1000);
+		const isWithinThirtyMinutes =
+			tweet.createdAt.getTime() > thirtyMinutesAgo.getTime();
+
+		if (tweet.updatedCount >= 5 || !isWithinThirtyMinutes) {
+			return res.status(403).json({
+				errors: [
+					{
+						param: "tweetId",
+						msg: "ツイートは30分以内かつ5回までしか更新できません",
+					},
+				],
+			});
+		}
+
+		const tweetImage = req.files
+			? (req.files as Express.Multer.File[]).map((file) => file.filename)
+			: [];
+
+		const updatedTweet = await Tweet.findOneAndUpdate(
+			{ _id: tweetId, userId: req?.user.id, __v: tweet.__v },
+			{
+				$set: {
+					content: req.body.content,
+					tweetImage:
+						tweet.tweetImage.length !== 0 ? tweet.tweetImage : tweetImage,
+				},
+				$inc: {
+					__v: 1,
+					updatedCount: 1,
+				},
+			},
+			{ new: true }
+		);
+
+		if (!updatedTweet) {
+			return res.status(404).json({
+				errors: [
+					{
+						param: "tweetId",
+						msg: "指定されたツイートが見つかりません",
+					},
+				],
+			});
+		}
+
+		return res.status(200).json(updatedTweet);
 	} catch (err) {
 		console.log(err);
 		return res.status(500).json(err);
@@ -216,6 +307,20 @@ export const getTweet = async (req: express.Request, res: express.Response) => {
 			});
 		}
 
+		if (tweet.retweet) {
+			const originalTweet = await Tweet.findById(tweet.retweet.originalTweetId);
+			await Tweet.findOneAndUpdate(
+				{ _id: req.params.tweetId },
+				{
+					$set: {
+						viewCount: originalTweet?.viewCount,
+					},
+					$inc: { __v: 1 },
+				},
+				{ new: true, returnNewDocument: false }
+			);
+		}
+
 		const query: any = [
 			{
 				$lookup: {
@@ -335,11 +440,14 @@ export const createRetweet = async (
 			content: tweet.content,
 			tweetImage: tweet.tweetImage,
 			retweetUsers: updatedTweet.retweetUsers,
+			viewCount: tweet.viewCount,
+			updateCount: tweet.updatedCount,
 			retweet: {
 				originalTweetId: tweet._id,
 				originalUser: tweet.userId,
 				originalContent: tweet.content,
 				originalTweetImage: tweet.tweetImage,
+				originalUpdatedCount: tweet.updatedCount,
 				originalCreatedAt: tweet.createdAt,
 				originalUpdatedAt: tweet.updatedAt,
 				originalTweetVersion: updatedTweet.__v,

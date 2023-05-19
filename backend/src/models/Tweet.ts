@@ -20,6 +20,9 @@ const retweetSchema = new mongoose.Schema({
 			type: String,
 		},
 	],
+	originalUpdatedCount: {
+		type: Number,
+	},
 	originalCreatedAt: {
 		type: Date,
 		required: true,
@@ -56,6 +59,10 @@ const tweetSchema = new mongoose.Schema({
 		},
 	],
 	viewCount: {
+		type: Number,
+		default: 0,
+	},
+	updatedCount: {
 		type: Number,
 		default: 0,
 	},
