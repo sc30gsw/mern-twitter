@@ -41,9 +41,11 @@ const Tooltips = ({
 				originalTweetId ? originalTweetId : tweetId
 			);
 			setViewCount(res.data.viewCount);
+			const tweets = await tweetApi.search();
+			setTweets(tweets.data);
 		};
 		getViewCount();
-	}, [tweetId, originalTweetId]);
+	}, [tweetId, originalTweetId, setTweets]);
 
 	const handleRetweet = async () => {
 		try {

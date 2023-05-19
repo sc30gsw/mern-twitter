@@ -68,6 +68,7 @@ const TweetDetail = () => {
 	const goBack = () => navigate(-1);
 
 	const [tweet, setTweet] = useState<Tweet>();
+	const [viewCount, setViewCount] = useState<number>(0);
 	const [loading, setLoading] = useState<boolean>(false);
 	const [isInputEmpty, setIsInputEmpty] = useState<boolean>(true);
 	const [open, setOpen] = useState<boolean>(false);
@@ -84,8 +85,9 @@ const TweetDetail = () => {
 			setTweet(undefined);
 			try {
 				const res = await tweetApi.getTweet(tweetId as string);
-				console.log(res.data);
 				console.log("ツイート詳細を取得しました");
+				const viewCount = await tweetApi.getViewCount(tweetId as string);
+				setViewCount(viewCount.data.viewCount);
 				setTweet(res.data[0]);
 				setLoading(false);
 			} catch (err) {
@@ -305,14 +307,17 @@ const TweetDetail = () => {
 						color: "#898989",
 					}}
 				>
-					{formatDate(tweet?.updatedAt as Date)} ・
+					{tweet?.retweet && Object.keys(tweet.retweet).length !== 0
+						? formatDate(tweet.retweet.originalUpdatedAt)
+						: formatDate(tweet?.updatedAt as Date)}
+					・
 					<Typography
 						variant="body1"
 						mr={"5px"}
 						ml={"5px"}
 						sx={{ color: "black", fontWeight: "bold" }}
 					>
-						{tweet?.viewCount}
+						{viewCount > 0 && viewCount}
 					</Typography>
 					Views
 				</Typography>
