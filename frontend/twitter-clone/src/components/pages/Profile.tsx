@@ -38,7 +38,12 @@ const Profile = () => {
 
 				const res = await tweetApi.searchUserTweets(`@${username}`);
 				setTweets(res.data);
-				setUser(res.data[0].user);
+				if (res.data.length !== 0) {
+					setUser(res.data[0].user);
+				} else {
+					const user = JSON.parse(localStorage.getItem("user") as string);
+					setUser(user);
+				}
 				setLoading(false);
 			} catch (err) {
 				console.log(err);
