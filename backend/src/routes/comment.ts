@@ -3,7 +3,7 @@ import { validContentLength } from "../services/validation/tweetValid";
 import { printErrors } from "../services/validation/validation";
 import verifyToken from "../middleware/tokenHandler";
 import upload from "../middleware/multerHandler";
-import { create } from "../services/commentService";
+import { create, getComments } from "../services/commentService";
 
 const router = express.Router();
 
@@ -16,6 +16,15 @@ router.post(
 	upload.array("commentImage", 4),
 	(req: express.Request, res: express.Response) => {
 		create(req, res);
+	}
+);
+
+// コメント一覧取得APIの呼出
+router.post(
+	"/getComments",
+	verifyToken,
+	(req: express.Request, res: express.Response) => {
+		getComments(req, res);
 	}
 );
 

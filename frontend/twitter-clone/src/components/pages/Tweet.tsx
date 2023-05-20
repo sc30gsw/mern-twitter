@@ -25,6 +25,7 @@ import { Tweet } from "../../types/Tweet";
 import TweetImageDialog from "./dialog/TweetImageDialog";
 import { useUserContext } from "../../contexts/UserProvider";
 import commentApi from "../../api/commentApi";
+import { Comment } from "../../types/Comment";
 
 interface ITweetImage {
 	imageCount: number;
@@ -32,10 +33,6 @@ interface ITweetImage {
 
 const TweetImage = styled("img")<ITweetImage>(({ theme, imageCount }) => ({
 	objectFit: "cover",
-	// borderRadius: theme.shape.borderRadius,
-	// marginTop: theme.spacing(1),
-	// marginBottom: theme.spacing(1),
-	// marginRight: theme.spacing(0.5),
 	...getImageStyle(imageCount),
 	"&:hover": {
 		cursor: "pointer",
@@ -84,12 +81,12 @@ const TweetDetail = () => {
 	const [charCount, setCharCount] = useState<number>(0);
 	const [images, setImages] = useState<File[]>([]);
 	const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+	const [comments, setComments] = useState<Comment[]>([]);
 	const [comment, setComment] = useState<string>("");
 	const [commentErrMsg, setCommentErrMsg] = useState<string>("");
 
 	useEffect(() => {
-		const getTweet = async () => {
-			setLoading(true);
+		const getTweetAndComments = async () => {
 			setTweet(undefined);
 			try {
 				const res = await tweetApi.getTweet(tweetId as string);
@@ -97,15 +94,22 @@ const TweetDetail = () => {
 				const viewCount = await tweetApi.getViewCount(tweetId as string);
 				setViewCount(viewCount.data.viewCount);
 				setTweet(res.data[0]);
-				setLoading(false);
+
+				const commentResponse = await commentApi.getComments(
+					res.data[0].retweet.originalTweetId
+						? res.data[0].retweet.originalTweetId
+						: res.data[0]._id
+				);
+
+				console.log("コメント一覧を取得しました");
+				setComments(commentResponse.data);
 			} catch (err) {
 				console.log(err);
-				setLoading(false);
 			}
 		};
 
-		getTweet();
-	}, [tweetId]);
+		getTweetAndComments();
+	}, [tweetId, setComments]);
 
 	const progress = (charCount / 140) * 100;
 	const remainingChars = 140 - charCount;
@@ -164,6 +168,29 @@ const TweetDetail = () => {
 		return `${timePart} · ${datePart}`;
 	};
 
+	const formatCommentDate = (updatedAt: Date) => {
+		const now = new Date();
+		const tweetDate = new Date(updatedAt);
+		const diffInSeconds = Math.floor(
+			(now.getTime() - tweetDate.getTime()) / 1000
+		);
+		const diffInMinutes = Math.floor(diffInSeconds / 60);
+		const diffInHours = Math.floor(diffInMinutes / 60);
+		const diffInDays = Math.floor(diffInHours / 24);
+
+		if (diffInDays >= 1) {
+			return `${tweetDate.toLocaleString("en", {
+				month: "short",
+			})}.${tweetDate.getDate()}`;
+		} else if (diffInHours >= 1) {
+			return `${diffInHours}h`;
+		} else if (diffInMinutes >= 1) {
+			return `${diffInMinutes}m`;
+		} else {
+			return `${diffInSeconds}s`;
+		}
+	};
+
 	const handleDialogOpen = (
 		tweetId: string,
 		userId: string,
@@ -215,7 +242,11 @@ const TweetDetail = () => {
 
 		if (err) return setLoading(false);
 		const formData = new FormData();
-		formData.append("tweetId", tweetId as string);
+		const commentTweetId =
+			tweet?.retweet && Object.keys(tweet.retweet).length !== 0
+				? tweet.retweet.originalTweetId
+				: tweetId;
+		formData.append("tweetId", commentTweetId as string);
 		formData.append("content", comment);
 		images.forEach((image) => {
 			formData.append("commentImage", image);
@@ -223,14 +254,22 @@ const TweetDetail = () => {
 
 		// コメント登録API呼出
 		try {
-			const res = await commentApi.create(formData);
-			console.log(res.data);
+			await commentApi.create(formData);
 
 			console.log("コメント登録に成功しました");
 			setLoading(false);
 			setImagePreviews([]);
 			setImages([]);
 			setComment("");
+			const res = await commentApi.getComments(
+				tweet?.retweet.originalTweetId
+					? tweet.retweet.originalTweetId
+					: (tweet?._id as string)
+			);
+
+			console.log("コメント一覧を取得しました");
+			setComments(res.data);
+			console.log(comments);
 		} catch (err: any) {
 			const errors = err.data.errors;
 			console.log(errors);
@@ -521,8 +560,9 @@ const TweetDetail = () => {
 						<TextField
 							fullWidth
 							variant="outlined"
-							id="tweet"
-							name="tweet"
+							id="comment"
+							name="comment"
+							value={comment}
 							label="Tweet your reply!"
 							placeholder="Tweet your reply!"
 							margin="normal"
@@ -723,108 +763,110 @@ const TweetDetail = () => {
 				</Box>
 			</Box>
 			<Box>
-				<List
-					// key={tweet._id}
-					sx={{
-						width: "100%",
-						bgcolor: "background.paper",
-					}}
-				>
-					<ListItem
-						alignItems="flex-start"
-						sx={{ borderBottom: "solid 1px #cacaca" }}
+				{comments.map((comment) => (
+					<List
+						key={comment._id}
+						sx={{
+							width: "100%",
+							bgcolor: "background.paper",
+						}}
 					>
-						<ListItemAvatar>
-							<IconButton component={Link} to={`/user`}>
-								<Avatar
-									// alt={tweet.user.profileName}
-									// src={IMAGE_URL + tweet.user.icon}
-									src={noAvatar}
-								/>
-							</IconButton>
-						</ListItemAvatar>
-						<Box sx={{ flexGrow: 1, mt: "10px" }}>
-							<Box
-								sx={{
-									display: "flex",
-									alignItems: "center",
-									justifyContent: "space-between",
-								}}
-							>
-								<Box sx={{ display: "flex" }}>
-									<Typography
-										sx={{
-											fontWeight: "bold",
-											":hover": { textDecoration: "underline" },
-										}}
-										component="span"
-										variant="body2"
-										color="text.primary"
-									>
-										<Link
-											to={`/user/`}
-											style={{
-												color: "black",
-												textDecoration: "none",
+						<ListItem
+							alignItems="flex-start"
+							sx={{ borderBottom: "solid 1px #cacaca" }}
+						>
+							<ListItemAvatar>
+								<IconButton
+									component={Link}
+									to={`/user/${comment.user.username}`}
+								>
+									<Avatar
+										alt={comment.user.profileName}
+										src={IMAGE_URL + comment.user.icon}
+									/>
+								</IconButton>
+							</ListItemAvatar>
+							<Box sx={{ flexGrow: 1, mt: "10px" }}>
+								<Box
+									sx={{
+										display: "flex",
+										alignItems: "center",
+										justifyContent: "space-between",
+									}}
+								>
+									<Box sx={{ display: "flex" }}>
+										<Typography
+											sx={{
 												fontWeight: "bold",
+												":hover": { textDecoration: "underline" },
+											}}
+											component="span"
+											variant="body2"
+											color="text.primary"
+										>
+											<Link
+												to={`/user/${comment.user.username}`}
+												style={{
+													color: "black",
+													textDecoration: "none",
+													fontWeight: "bold",
+												}}
+											>
+												{comment.user.profileName}
+											</Link>
+										</Typography>
+										<Typography
+											component="span"
+											variant="body2"
+											ml={"5px"}
+											sx={{
+												color: "#898989",
 											}}
 										>
-											username
-										</Link>
-									</Typography>
-									<Typography
-										component="span"
-										variant="body2"
-										ml={"5px"}
-										sx={{
-											color: "#898989",
-										}}
-									>
-										ユーザー名・5h
-									</Typography>
+											{comment.user.username}・
+											{formatCommentDate(comment.updatedAt)}
+										</Typography>
+									</Box>
+									<Box>
+										<IconButton>
+											<MoreHorizIcon />
+										</IconButton>
+									</Box>
 								</Box>
-								<Box>
-									<IconButton>
-										<MoreHorizIcon />
-									</IconButton>
-								</Box>
-							</Box>
-							<Link
-								to={`/tweet/`}
-								style={{
-									color: "black",
-									textDecoration: "none",
-								}}
-							>
-								<Typography>ツイート</Typography>
-								{/* {tweet.tweetImage.map((image, index) => (
+								<Link
+									to={"#"}
+									style={{
+										color: "black",
+										textDecoration: "none",
+									}}
+								>
+									<Typography>{comment.content}</Typography>
+									{comment.commentImage.map((image, index) => (
 										<TweetImage
 											key={image + index}
 											src={IMAGE_URL + image}
 											alt={image}
-											imageCount={tweet.tweetImage.length}
+											imageCount={comment.commentImage.length}
 											onClick={() => {
-												handleDialogOpen(tweet.tweetImage, index);
+												handleDialogOpen(
+													comment.tweetId,
+													comment.userId,
+													comment.commentImage,
+													tweet?.retweet &&
+														Object.keys(tweet?.retweet).length !== 0
+														? tweet.retweet.originalTweetId
+														: "",
+													tweet?.retweetUsers as string[],
+													index
+												);
 											}}
 										/>
-									))} */}
-							</Link>
-							<Box
-								sx={{
-									display: "flex",
-									justifyContent: "space-between",
-									padding: "10px 0",
-								}}
-							>
-								{/* <Tooltips
-									tweetId={tweetId as string}
-									fontSize="20px"
-									color=""
-								/> */}
+									))}
+								</Link>
 							</Box>
-						</Box>
-					</ListItem>
-				</List>
+						</ListItem>
+					</List>
+				))}
 			</Box>
 			<TweetImageDialog
 				open={open}

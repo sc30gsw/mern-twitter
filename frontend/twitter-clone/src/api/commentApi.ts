@@ -1,4 +1,4 @@
-import { axiosClientFormData } from "./axiosClient";
+import { axiosClient, axiosClientFormData } from "./axiosClient";
 
 const commentApi = {
 	// コメント登録API
@@ -8,6 +8,9 @@ const commentApi = {
 				"Content-Type": "multipart/form-data",
 			},
 		}),
+	// コメント一覧取得API
+	getComments: (tweetId: string) =>
+		axiosClient.post("comment/getComments", { tweetId }),
 };
 
 export default commentApi;
