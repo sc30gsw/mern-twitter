@@ -168,7 +168,8 @@ const Sidebar = () => {
 									/>
 								),
 								"プロフィール",
-								location.pathname === `/${user.username.split("@").join("")}`
+								location.pathname ===
+									`/user/${user.username.split("@").join("")}`
 							)}
 						</Link>
 						{isSmallScreen ? (
