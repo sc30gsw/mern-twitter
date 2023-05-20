@@ -106,6 +106,8 @@ const EditProfileDialog = ({ open, onClose }: EditProfileDialogProps) => {
 
 		const formData = new FormData();
 
+		const removeFlg = isRemove ? "1" : "0";
+
 		if (profileName) {
 			formData.append("profileName", profileName);
 		}
@@ -122,15 +124,12 @@ const EditProfileDialog = ({ open, onClose }: EditProfileDialogProps) => {
 			formData.append("icon", icon);
 		}
 
+		formData.append("isRemove", removeFlg);
+
 		try {
 			const res = await authApi.update(user?._id as string, formData);
-			if (user) {
-				const updatedUser = {
-					...res.data.updatedUser,
-					profileImg: isRemove ? "" : res.data.updatedUser.profileImg,
-				};
-				setUser(updatedUser);
-			}
+
+			setUser(res.data.updatedUser);
 			console.log("ユーザー更新に成功しました");
 			onClose();
 			setLoading(false);

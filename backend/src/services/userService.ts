@@ -185,7 +185,7 @@ export const updateUser = async (
 	req: express.Request,
 	res: express.Response
 ) => {
-	const { profileName, description } = req.body;
+	const { profileName, description, isRemove } = req.body;
 	const { userId } = req.params;
 	try {
 		if (!userId) {
@@ -233,7 +233,7 @@ export const updateUser = async (
 					profileName: profileName,
 					description: description,
 					icon: iconUrl,
-					profileImg: profileImgUrl,
+					profileImg: isRemove === "1" ? "" : profileImgUrl,
 				},
 				$inc: { __v: 1 },
 			},

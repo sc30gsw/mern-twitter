@@ -13,22 +13,22 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import TweetList from "./TweetList";
 import { useEffect, useState } from "react";
 import EditProfileDialog from "./dialog/EditProfileDialog";
-import { useTweetContext } from "../../contexts/TweetProvider";
 import tweetApi from "../../api/tweetApi";
-import { useUserContext } from "../../contexts/UserProvider";
+import { TweetUser } from "../../types/User";
+import { Tweet } from "../../types/Tweet";
 
 const IMAGE_URL = process.env.REACT_APP_IMAGE_URL as string;
 
 const Profile = () => {
 	const pathname = useLocation().pathname;
-	const { user, setUser } = useUserContext();
-	const { tweets, setTweets } = useTweetContext();
 
 	const navigate = useNavigate();
 	const goBack = () => navigate(-1);
 
 	const [loading, setLoading] = useState<boolean>(true);
 	const [tabValue, setTabValue] = useState<number>(0);
+	const [user, setUser] = useState<TweetUser>();
+	const [tweets, setTweets] = useState<Tweet[]>([]);
 	const [open, setOpen] = useState<boolean>(false);
 
 	useEffect(() => {
@@ -37,14 +37,8 @@ const Profile = () => {
 				const username = pathname.replace("/user/", "");
 
 				const res = await tweetApi.searchUserTweets(`@${username}`);
-				if (res.data.length > 0) {
-					setUser(res.data[0].user);
-					setTweets(res.data);
-				} else {
-					const user = JSON.parse(localStorage.getItem("user") as string);
-					setUser(user);
-					setTweets([]);
-				}
+				setTweets(res.data);
+				setUser(res.data[0].user);
 				setLoading(false);
 			} catch (err) {
 				console.log(err);
@@ -53,7 +47,7 @@ const Profile = () => {
 		};
 
 		getUserTweets();
-	}, [pathname, setTweets, setUser]);
+	}, [pathname, setTweets]);
 
 	const handleTabChange = (e: React.ChangeEvent<any>, newValue: number) =>
 		setTabValue(newValue);

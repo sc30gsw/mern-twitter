@@ -88,15 +88,14 @@ export const update = async (req: express.Request, res: express.Response) => {
 
 		const tweetImage = req.files
 			? (req.files as Express.Multer.File[]).map((file) => file.filename)
-			: [];
+			: tweet.tweetImage;
 
 		const updatedTweet = await Tweet.findOneAndUpdate(
 			{ _id: tweetId, userId: req?.user.id, __v: tweet.__v },
 			{
 				$set: {
 					content: req.body.content,
-					tweetImage:
-						tweet.tweetImage.length !== 0 ? tweet.tweetImage : tweetImage,
+					tweetImage: tweetImage,
 				},
 				$inc: {
 					__v: 1,
@@ -196,6 +195,7 @@ export const searchUserTweets = async (
 				],
 			});
 		}
+
 		let query: any = [
 			{
 				$lookup: {

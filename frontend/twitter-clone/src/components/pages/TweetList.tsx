@@ -175,7 +175,7 @@ const TweetList = ({ tweets }: TweetListProps) => {
 											color="text.primary"
 										>
 											<Link
-												to={`/user/${tweet.user?.username}`}
+												to={`/user/${tweet.user?.username.replace("@", "")}`}
 												style={{ color: "#898989", textDecoration: "none" }}
 											>
 												You Retweeted
@@ -201,7 +201,7 @@ const TweetList = ({ tweets }: TweetListProps) => {
 											color="text.primary"
 										>
 											<Link
-												to={`/user/${tweet.user?.username}`}
+												to={`/user/${tweet.user?.username.replace("@", "")}`}
 												style={{ color: "#898989", textDecoration: "none" }}
 											>
 												{tweet.user?.username} Retweeted
@@ -216,8 +216,8 @@ const TweetList = ({ tweets }: TweetListProps) => {
 										component={Link}
 										to={`/user/${
 											tweet.retweet && Object.keys(tweet.retweet).length !== 0
-												? tweet.retweet.originalUser?.username
-												: tweet.user?.username
+												? tweet.retweet.originalUser?.username.replace("@", "")
+												: tweet.user?.username.replace("@", "")
 										}`}
 									>
 										<Avatar
@@ -256,8 +256,11 @@ const TweetList = ({ tweets }: TweetListProps) => {
 													to={`/user/${
 														tweet.retweet &&
 														Object.keys(tweet.retweet).length !== 0
-															? tweet.retweet.originalUser?.username
-															: tweet.user?.username
+															? tweet.retweet.originalUser?.username.replace(
+																	"@",
+																	""
+															  )
+															: tweet.user?.username.replace("@", "")
 													}`}
 													style={{ color: "black", textDecoration: "none" }}
 												>
@@ -312,11 +315,12 @@ const TweetList = ({ tweets }: TweetListProps) => {
 															) : (
 																<Box></Box>
 															)}
-															{(tweet.userId === user?._id &&
-																!tweet.retweetUsers.includes(user?._id) &&
-																tweet.updatedCount >= 5) ||
-															new Date(tweet.createdAt).getTime() >
+															{tweet.updatedCount >= 5 ||
+															new Date(tweet.createdAt).getTime() <
 																thirtyMinutesAgo.getTime() ? (
+																<Box></Box>
+															) : tweet.userId === user?._id &&
+															  !tweet.retweetUsers.includes(user?._id) ? (
 																<MenuItem
 																	component={Link}
 																	to={`/editTweet/${tweet._id}`}

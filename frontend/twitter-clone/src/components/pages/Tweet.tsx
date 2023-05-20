@@ -778,7 +778,7 @@ const TweetDetail = () => {
 							<ListItemAvatar>
 								<IconButton
 									component={Link}
-									to={`/user/${comment.user.username}`}
+									to={`/user/${comment.user.username.replace("@", "")}`}
 								>
 									<Avatar
 										alt={comment.user.profileName}
@@ -805,7 +805,7 @@ const TweetDetail = () => {
 											color="text.primary"
 										>
 											<Link
-												to={`/user/${comment.user.username}`}
+												to={`/user/${comment.user.username.replace("@", "")}`}
 												style={{
 													color: "black",
 													textDecoration: "none",

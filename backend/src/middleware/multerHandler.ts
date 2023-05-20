@@ -6,7 +6,10 @@ import path from "path";
 const storage = multer.diskStorage({
 	destination: (req, file, cb) => {
 		// 画像がuploadされるパス
-		const uploadPath = path.resolve(__dirname, "../uploads");
+		const uploadPath = path.resolve(
+			__dirname,
+			"../../../frontend/twitter-clone/public/uploads"
+		);
 
 		// uploadPathにディレクトリが存在するかどうかを確認
 		if (!fs.existsSync(uploadPath)) {

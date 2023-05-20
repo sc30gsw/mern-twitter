@@ -49,7 +49,6 @@ export const getComments = async (
 	res: express.Response
 ) => {
 	try {
-		console.log(req.body.tweetId);
 		if (!req.body.tweetId) {
 			return res.status(401).json({
 				errors: [
@@ -83,7 +82,6 @@ export const getComments = async (
 		];
 
 		const comments = await Comment.aggregate(query);
-		console.log(comments);
 		return res.status(200).json(comments);
 	} catch (err) {
 		console.log(err);
