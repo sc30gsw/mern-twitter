@@ -93,6 +93,7 @@ const EditProfileDialog = ({ open, onClose }: EditProfileDialogProps) => {
 			err = true;
 			setProfileNameErrMsg("名前を入力してください");
 		} else if (profileName.length < 8) {
+			err = true;
 			setProfileNameErrMsg("名前は8文字以上で入力してください");
 		}
 
