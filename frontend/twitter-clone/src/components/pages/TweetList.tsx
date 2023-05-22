@@ -22,12 +22,13 @@ import { styled } from "@mui/system";
 import tweetApi from "../../api/tweetApi";
 import { useTweetContext } from "../../contexts/TweetProvider";
 import Tooltips from "./Items/Tooltips";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TweetImageDialog from "./dialog/TweetImageDialog";
 import RepeatOutlinedIcon from "@mui/icons-material/RepeatOutlined";
 import { useUserContext } from "../../contexts/UserProvider";
 import CommentDialog from "./dialog/CommentDialog";
 import { useCommentDialogContext } from "../../contexts/TweetBoxDialogProvider";
+import likeApi from "../../api/likeApi";
 
 const IMAGE_URL = process.env.REACT_APP_IMAGE_URL as string;
 

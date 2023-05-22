@@ -35,6 +35,7 @@ import { Comment } from "../../types/Comment";
 import { useCommentDialogContext } from "../../contexts/TweetBoxDialogProvider";
 import CommentDialog from "./dialog/CommentDialog";
 import DeleteTweetDialog from "./dialog/DelteDialog";
+import likeApi from "../../api/likeApi";
 
 interface ITweetImage {
 	imageCount: number;
@@ -97,6 +98,7 @@ const TweetDetail = () => {
 	const [deleteOpen, setDeleteOpen] = useState<boolean>(false);
 	const [isCommentDelete, setIsCommentDelete] = useState<boolean>(false);
 	const [commentId, setCommentId] = useState<string>("");
+	const [likeCount, setLikeCount] = useState<number>(0);
 
 	useEffect(() => {
 		const getTweetAndComments = async () => {
@@ -116,13 +118,16 @@ const TweetDetail = () => {
 
 				console.log("コメント一覧を取得しました");
 				setComments(commentResponse.data);
+
+				const likeCounts = await likeApi.getLikes(tweetId as string);
+				setLikeCount(likeCounts.data.length);
 			} catch (err) {
 				console.log(err);
 			}
 		};
 
 		getTweetAndComments();
-	}, [tweetId, setComments, commentOpenDialog]);
+	}, [tweetId, setComments, commentOpenDialog, likeCount]);
 
 	const currentTime = new Date();
 	const thirtyMinutesAgo = new Date(currentTime.getTime() - 30 * 60 * 1000);
@@ -564,10 +569,10 @@ const TweetDetail = () => {
 					mr={1}
 					sx={{ fontWeight: "bold" }}
 				>
-					17
+					{likeCount > 0 && likeCount}
 				</Typography>
 				<Typography variant="body1" ml={"1px"} sx={{ color: "#898989" }}>
-					Likes
+					{likeCount > 0 && "Likes"}
 				</Typography>
 			</Box>
 			{tweet?.retweet && Object.keys(tweet.retweet).length !== 0 ? (

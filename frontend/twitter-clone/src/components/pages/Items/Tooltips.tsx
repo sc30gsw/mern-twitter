@@ -6,11 +6,13 @@ import IosShareOutlinedIcon from "@mui/icons-material/IosShareOutlined";
 import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
 import tweetApi from "../../../api/tweetApi";
 import { useTweetContext } from "../../../contexts/TweetProvider";
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { useUserContext } from "../../../contexts/UserProvider";
 import { useNavigate } from "react-router-dom";
 import commentApi from "../../../api/commentApi";
 import { useCommentDialogContext } from "../../../contexts/TweetBoxDialogProvider";
+import likeApi from "../../../api/likeApi";
+import { Like } from "../../../types/Like";
 
 type TooltipsProps = {
 	userId: string;
@@ -38,9 +40,12 @@ const Tooltips = ({
 
 	const [viewCount, setViewCount] = useState<number>(0);
 	const [commentCount, setCommentCount] = useState<number>(0);
+	const [like, setLike] = useState<Like>();
+	const [likeCount, setLikeCount] = useState<number>(0);
 	const [hover, setHover] = useState<boolean>(false);
 	const [viewHover, setViewHover] = useState<boolean>(false);
 	const [commentHover, setCommentHover] = useState<boolean>(false);
+	const [likeHover, setLikeHover] = useState<boolean>(false);
 
 	useEffect(() => {
 		const getViewCount = async () => {
@@ -59,9 +64,17 @@ const Tooltips = ({
 			setCommentCount(res.data.length);
 		};
 
+		const getLikes = async () => {
+			const like = await likeApi.getUserLike(tweetId);
+			setLike(like.data);
+			const likeCounts = await likeApi.getLikes(tweetId);
+			setLikeCount(likeCounts.data.length);
+		};
+
 		getViewCount();
 		getComments();
-	}, [tweetId, originalTweetId, setTweets, commentOpenDialog]);
+		getLikes();
+	}, [tweetId, originalTweetId, setTweets, commentOpenDialog, likeCount]);
 
 	const handleRetweet = async () => {
 		try {
@@ -89,6 +102,27 @@ const Tooltips = ({
 			setTweets(res.data);
 		} catch (err) {
 			console.log(err);
+		}
+	};
+
+	const handleLike = async () => {
+		try {
+			const res = await likeApi.getUserLike(tweetId);
+
+			if (!res.data) {
+				await likeApi.create(tweetId);
+			} else {
+				if (res.data.userId !== user?._id) return alert("ログインしてください");
+				await likeApi.delete(tweetId);
+			}
+		} catch (err) {
+			console.log(err);
+		} finally {
+			const likes = await likeApi.getLikes(tweetId);
+			setLikeCount(likes.data.length);
+
+			const res = await tweetApi.search();
+			setTweets(res.data);
 		}
 	};
 
@@ -175,9 +209,43 @@ const Tooltips = ({
 				</Box>
 			</Tooltip>
 			<Tooltip title="Like">
-				<IconButton sx={{ color: color }}>
-					<FavoriteBorderOutlinedIcon sx={{ fontSize: fontSize }} />
-				</IconButton>
+				<Box
+					sx={{
+						display: "flex",
+						alignItems: "center",
+					}}
+					onMouseEnter={() => setLikeHover(true)}
+					onMouseLeave={() => setLikeHover(false)}
+				>
+					<IconButton
+						sx={{
+							color:
+								likeHover || (user && user?._id === like?.userId)
+									? "red"
+									: color,
+							background: hover ? "rgba(151, 199, 183, 0.472)" : "",
+							":hover": {
+								background: "rgba(151, 199, 183, 0.472)",
+							},
+						}}
+						onClick={handleLike}
+					>
+						<FavoriteBorderOutlinedIcon sx={{ fontSize: fontSize }} />
+					</IconButton>
+					<Typography
+						sx={{
+							color:
+								likeHover || (user && user?._id === like?.userId)
+									? "red"
+									: "#898989",
+							":hover": {
+								cursor: "pointer",
+							},
+						}}
+					>
+						{likeCount > 0 && likeCount}
+					</Typography>
+				</Box>
 			</Tooltip>
 			<Tooltip title="View">
 				<Box
