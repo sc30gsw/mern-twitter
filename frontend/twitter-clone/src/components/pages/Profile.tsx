@@ -103,8 +103,6 @@ const Profile = () => {
 		}
 	};
 
-	console.log(profileUser);
-
 	return (
 		<>
 			{loading ? (
