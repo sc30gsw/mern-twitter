@@ -88,3 +88,40 @@ export const getComments = async (
 		return res.status(500).json(err);
 	}
 };
+
+export const deleteComment = async (
+	req: express.Request,
+	res: express.Response
+) => {
+	try {
+		if (!req.user?.id) {
+			return res.status(401).json({
+				errors: [
+					{
+						param: "userId",
+						msg: "無効なリクエストです",
+					},
+				],
+			});
+		}
+
+		const comment = await Comment.findById(req.query.commentId);
+
+		if (!comment) {
+			return res.status(400).json({
+				errors: [
+					{
+						param: "comment",
+						msg: "コメントが存在しません",
+					},
+				],
+			});
+		}
+
+		const deletedComment = await Comment.deleteOne({ _id: comment._id });
+
+		return res.status(200).json(deletedComment);
+	} catch (err) {
+		return res.status(500).json(err);
+	}
+};

@@ -3,7 +3,7 @@ import { validContentLength } from "../services/validation/tweetValid";
 import { printErrors } from "../services/validation/validation";
 import verifyToken from "../middleware/tokenHandler";
 import upload from "../middleware/multerHandler";
-import { create, getComments } from "../services/commentService";
+import { create, deleteComment, getComments } from "../services/commentService";
 
 const router = express.Router();
 
@@ -25,6 +25,15 @@ router.post(
 	verifyToken,
 	(req: express.Request, res: express.Response) => {
 		getComments(req, res);
+	}
+);
+
+// コメント削除APIの呼出
+router.delete(
+	"/delete",
+	verifyToken,
+	(req: express.Request, res: express.Response) => {
+		deleteComment(req, res);
 	}
 );
 

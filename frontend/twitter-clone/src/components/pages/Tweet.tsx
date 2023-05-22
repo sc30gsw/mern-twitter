@@ -6,7 +6,13 @@ import {
 	TextField,
 	Typography,
 	CircularProgress,
+	Menu,
+	ListItemIcon,
+	MenuItem,
 } from "@mui/material";
+import PopupState, { bindTrigger, bindMenu } from "material-ui-popup-state";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import ModeEditOutlineOutlinedIcon from "@mui/icons-material/ModeEditOutlineOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
@@ -28,6 +34,7 @@ import commentApi from "../../api/commentApi";
 import { Comment } from "../../types/Comment";
 import { useCommentDialogContext } from "../../contexts/TweetBoxDialogProvider";
 import CommentDialog from "./dialog/CommentDialog";
+import DeleteTweetDialog from "./dialog/DelteDialog";
 
 interface ITweetImage {
 	imageCount: number;
@@ -87,6 +94,9 @@ const TweetDetail = () => {
 	const [comments, setComments] = useState<Comment[]>([]);
 	const [comment, setComment] = useState<string>("");
 	const [commentErrMsg, setCommentErrMsg] = useState<string>("");
+	const [deleteOpen, setDeleteOpen] = useState<boolean>(false);
+	const [isCommentDelete, setIsCommentDelete] = useState<boolean>(false);
+	const [commentId, setCommentId] = useState<string>("");
 
 	useEffect(() => {
 		const getTweetAndComments = async () => {
@@ -113,6 +123,9 @@ const TweetDetail = () => {
 
 		getTweetAndComments();
 	}, [tweetId, setComments, commentOpenDialog]);
+
+	const currentTime = new Date();
+	const thirtyMinutesAgo = new Date(currentTime.getTime() - 30 * 60 * 1000);
 
 	const progress = (charCount / 140) * 100;
 	const remainingChars = 140 - charCount;
@@ -272,7 +285,27 @@ const TweetDetail = () => {
 
 			console.log("コメント一覧を取得しました");
 			setComments(res.data);
-			console.log(comments);
+		} catch (err: any) {
+			const errors = err.data.errors;
+			console.log(errors);
+			setLoading(false);
+		}
+	};
+
+	const handleCommentDelete = async (commentId: string) => {
+		try {
+			await commentApi.delete(commentId);
+			console.log("コメント削除に成功しました");
+
+			const res = await commentApi.getComments(
+				tweet?.retweet.originalTweetId
+					? tweet.retweet.originalTweetId
+					: (tweet?._id as string)
+			);
+
+			console.log("コメント一覧を取得しました");
+			setComments(res.data);
+			setDeleteOpen(false);
 		} catch (err: any) {
 			const errors = err.data.errors;
 			console.log(errors);
@@ -388,9 +421,53 @@ const TweetDetail = () => {
 						</Box>
 					</Box>
 					<Box>
-						<IconButton>
-							<MoreHorizIcon />
-						</IconButton>
+						{tweet?.userId === user?._id &&
+							!tweet?.retweetUsers.includes(user?._id as string) && (
+								<PopupState variant="popover" popupId="demo-popup-menu">
+									{(popupState) => (
+										<>
+											<IconButton {...bindTrigger(popupState)}>
+												<MoreHorizIcon />
+											</IconButton>
+											<Menu {...bindMenu(popupState)}>
+												{tweet?.userId === user?._id &&
+												!tweet?.retweetUsers.includes(user?._id as string) ? (
+													<MenuItem onClick={popupState.close}>
+														<ListItemIcon>
+															<DeleteOutlineOutlinedIcon
+																sx={{ color: "red" }}
+															/>
+														</ListItemIcon>
+														<Typography variant="inherit" sx={{ color: "red" }}>
+															Delete
+														</Typography>
+													</MenuItem>
+												) : (
+													<Box></Box>
+												)}
+												{(tweet?.updatedCount as number) >= 5 ||
+												new Date(tweet?.createdAt as Date).getTime() <
+													thirtyMinutesAgo.getTime() ? (
+													<Box></Box>
+												) : tweet?.userId === user?._id &&
+												  !tweet?.retweetUsers.includes(user?._id as string) ? (
+													<MenuItem
+														component={Link}
+														to={`/editTweet/${tweet?._id}`}
+													>
+														<ListItemIcon>
+															<ModeEditOutlineOutlinedIcon />
+														</ListItemIcon>
+														<Typography variant="inherit">Edit</Typography>
+													</MenuItem>
+												) : (
+													<Box></Box>
+												)}
+											</Menu>
+										</>
+									)}
+								</PopupState>
+							)}
 					</Box>
 				</Box>
 			</Box>
@@ -841,9 +918,39 @@ const TweetDetail = () => {
 										</Typography>
 									</Box>
 									<Box>
-										<IconButton>
-											<MoreHorizIcon />
-										</IconButton>
+										{user?._id === comment.user._id && (
+											<PopupState variant="popover" popupId="demo-popup-menu">
+												{(popupState) => (
+													<>
+														<IconButton {...bindTrigger(popupState)}>
+															<MoreHorizIcon />
+														</IconButton>
+														<Menu {...bindMenu(popupState)}>
+															<MenuItem
+																onClick={() => {
+																	popupState.close();
+																	setIsCommentDelete(true);
+																	setDeleteOpen(true);
+																	setCommentId(comment._id);
+																}}
+															>
+																<ListItemIcon>
+																	<DeleteOutlineOutlinedIcon
+																		sx={{ color: "red" }}
+																	/>
+																</ListItemIcon>
+																<Typography
+																	variant="inherit"
+																	sx={{ color: "red" }}
+																>
+																	Delete
+																</Typography>
+															</MenuItem>
+														</Menu>
+													</>
+												)}
+											</PopupState>
+										)}
 									</Box>
 								</Box>
 								<Link
@@ -896,6 +1003,13 @@ const TweetDetail = () => {
 				tweetId={tweetId as string}
 				open={commentOpenDialog}
 				onClose={() => setCommentOpenDialog(false)}
+			/>
+			<DeleteTweetDialog
+				title={isCommentDelete ? "Comment" : "Tweet"}
+				open={deleteOpen}
+				onClose={() => setDeleteOpen(false)}
+				deleteId={isCommentDelete ? commentId : ""}
+				handleDelete={isCommentDelete ? handleCommentDelete : () => {}}
 			/>
 		</>
 	);
