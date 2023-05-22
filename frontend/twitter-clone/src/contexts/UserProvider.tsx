@@ -8,6 +8,8 @@ type User = {
 	icon: string;
 	profileImg: string;
 	description: string;
+	following: string[];
+	followers: string[];
 	__v: number;
 };
 

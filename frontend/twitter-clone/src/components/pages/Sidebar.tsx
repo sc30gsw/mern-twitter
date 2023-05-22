@@ -18,17 +18,16 @@ import {
 import { Link, useLocation } from "react-router-dom";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Sign from "./Sign";
-import { useState } from "react";
 import TweetBoxDialog from "./dialog/TweetBoxDialog";
 import { useUserContext } from "../../contexts/UserProvider";
+import { useTweetBoxDialogContext } from "../../contexts/TweetBoxDialogProvider";
 
 const Sidebar = () => {
 	// 現在のルートを取得
 	const location = useLocation();
 
 	const { user } = useUserContext();
-
-	const [openDialog, setOpenDialog] = useState<boolean>(false);
+	const { openDialog, setOpenDialog } = useTweetBoxDialogContext();
 
 	const isSmallScreen = useMediaQuery("(max-width:1000px)");
 
@@ -156,12 +155,12 @@ const Sidebar = () => {
 							)}
 						</Link>
 						<Link
-							to={`/${user.username.split("@").join("")}`}
+							to={`/user/${user.username.split("@").join("")}`}
 							style={{ marginTop: "10px" }}
 						>
 							{renderButtonWithTooltip(
 								location.pathname ===
-									`/${user.username.split("@").join("")}` ? (
+									`/user/${user.username.split("@").join("")}` ? (
 									<PersonIcon sx={{ color: "#14171A", fontSize: "40px" }} />
 								) : (
 									<PersonOutlineOutlinedIcon
@@ -169,7 +168,8 @@ const Sidebar = () => {
 									/>
 								),
 								"プロフィール",
-								location.pathname === `/${user.username.split("@").join("")}`
+								location.pathname ===
+									`/user/${user.username.split("@").join("")}`
 							)}
 						</Link>
 						{isSmallScreen ? (

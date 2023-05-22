@@ -17,5 +17,7 @@ export type TweetUser = {
 	profileName: string;
 	description: string;
 	profileImg: string;
+	following: string[];
+	followers: string[];
 	__v: number;
 };

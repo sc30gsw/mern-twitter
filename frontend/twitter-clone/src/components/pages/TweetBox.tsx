@@ -1,4 +1,11 @@
-import { Typography, Box, TextField, Avatar, IconButton } from "@mui/material";
+import {
+	Typography,
+	Box,
+	TextField,
+	Avatar,
+	IconButton,
+	CircularProgress,
+} from "@mui/material";
 import noAvatar from "../../assets/images/noAvatar.png";
 import ImageIcon from "@mui/icons-material/Image";
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
@@ -13,19 +20,32 @@ import { Link } from "react-router-dom";
 const IMAGE_URL = process.env.REACT_APP_IMAGE_URL as string;
 
 type TweetBoxPropsType = {
-	title: string | undefined;
 	rows: number | undefined;
 	onClose: () => void;
 };
 
-const TweetBox = ({ title, rows, onClose }: TweetBoxPropsType) => {
+const TweetBox = ({ rows, onClose }: TweetBoxPropsType) => {
 	const { user } = useUserContext();
 	const { setTweets } = useTweetContext();
 	const [loading, setLoading] = useState<boolean>(false);
 	const [tweet, setTweet] = useState<string>("");
 	const [tweetErrMsg, setTweetErrMsg] = useState<string>("");
+	const [charCount, setCharCount] = useState<number>(0);
 	const [images, setImages] = useState<File[]>([]);
 	const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+
+	const progress = (charCount / 140) * 100;
+	const remainingChars = 140 - charCount;
+
+	const getColor = (charCount: number) => {
+		if (charCount >= 140) {
+			return "red";
+		} else if (charCount >= 120) {
+			return "#ffc760";
+		} else {
+			return "primary";
+		}
+	};
 
 	const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		if (e.target.files) {
@@ -107,7 +127,6 @@ const TweetBox = ({ title, rows, onClose }: TweetBoxPropsType) => {
 
 	return (
 		<Box>
-			<Typography variant="h5">{title}</Typography>
 			<Box
 				component="form"
 				encType="multipart/form-data"
@@ -115,7 +134,7 @@ const TweetBox = ({ title, rows, onClose }: TweetBoxPropsType) => {
 				onSubmit={handleSubmit}
 				sx={{ display: "flex", mr: "10px", maxWidth: 500 }}
 			>
-				<Link to={`/${user?.username.split("@").join("")}`}>
+				<Link to={`/user/${user?.username.split("@").join("")}`}>
 					<Avatar
 						src={user?.icon ? IMAGE_URL + user?.icon : noAvatar}
 						alt="noAvatar"
@@ -134,7 +153,10 @@ const TweetBox = ({ title, rows, onClose }: TweetBoxPropsType) => {
 						placeholder="What's happening?"
 						margin="normal"
 						multiline
-						onChange={(e) => setTweet(e.target.value)}
+						onChange={(e) => {
+							setTweet(e.target.value);
+							setCharCount(e.target.value.length);
+						}}
 						error={tweetErrMsg !== ""}
 						helperText={tweetErrMsg}
 						inputProps={{ maxLength: 140 }}
@@ -184,43 +206,94 @@ const TweetBox = ({ title, rows, onClose }: TweetBoxPropsType) => {
 							justifyContent: "space-between",
 						}}
 					>
-						<Box sx={{ display: "flex" }}>
-							<IconButton
-								component="label"
-								htmlFor="tweetImage"
-								disabled={images.length === 4}
-								sx={{
-									color: "#1DA1F2",
-									":hover": {
-										cursor: "pointer",
-										background: "#c2dff0",
-										borderRadius: "50%",
-									},
-								}}
-							>
-								<input
-									type="file"
-									id="tweetImage"
-									name="tweetImage"
-									accept="video/mp4 image/png image/jpeg audio/mpeg"
-									multiple
-									style={{ display: "none" }}
-									onChange={handleImageChange}
-								/>
-								<ImageIcon />
-							</IconButton>
-							<IconButton
-								sx={{
-									color: "#1DA1F2",
-									":hover": {
-										cursor: "pointer",
-										background: "#c2dff0",
-										borderRadius: "50%",
-									},
-								}}
-							>
-								<EmojiEmotionsIcon />
-							</IconButton>
+						<Box
+							sx={{
+								width: "100%",
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "space-between",
+							}}
+						>
+							<Box>
+								<IconButton
+									component="label"
+									htmlFor="tweetImage"
+									disabled={images.length === 4}
+									sx={{
+										color: "#1DA1F2",
+										":hover": {
+											cursor: "pointer",
+											background: "#c2dff0",
+											borderRadius: "50%",
+										},
+									}}
+								>
+									<input
+										type="file"
+										id="tweetImage"
+										name="tweetImage"
+										accept="video/mp4 image/png image/jpeg audio/mpeg"
+										multiple
+										style={{ display: "none" }}
+										onChange={handleImageChange}
+									/>
+									<ImageIcon />
+								</IconButton>
+								<IconButton
+									sx={{
+										color: "#1DA1F2",
+										":hover": {
+											cursor: "pointer",
+											background: "#c2dff0",
+											borderRadius: "50%",
+										},
+									}}
+								>
+									<EmojiEmotionsIcon />
+								</IconButton>
+							</Box>
+							<Box sx={{ display: "flex", alignItems: "center" }}>
+								<Box
+									sx={{
+										mt: 1,
+										mb: 2,
+										mr: 2,
+										position: "relative",
+										display: "inline-flex",
+									}}
+								>
+									<CircularProgress
+										key={getColor(charCount)}
+										variant="determinate"
+										value={progress}
+										style={{
+											color: getColor(charCount),
+										}}
+									/>
+									{remainingChars <= 20 && (
+										<Box
+											sx={{
+												top: 0,
+												left: 0,
+												bottom: 0,
+												right: 0,
+												position: "absolute",
+												display: "flex",
+												alignItems: "center",
+												justifyContent: "center",
+											}}
+										>
+											<Typography
+												variant="caption"
+												component="div"
+												color="text.secondary"
+											>
+												{remainingChars}
+											</Typography>
+										</Box>
+									)}
+								</Box>
+							</Box>
 						</Box>
 						<LoadingButton
 							type="submit"

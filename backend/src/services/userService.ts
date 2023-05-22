@@ -161,7 +161,7 @@ export const resetPassword = async (
 				},
 				$inc: { __v: 1 },
 			},
-			{ new: true, returnOriginal: false }
+			{ new: true, returnNewDocument: false }
 		);
 
 		if (!updatedUser) {
@@ -185,7 +185,8 @@ export const updateUser = async (
 	req: express.Request,
 	res: express.Response
 ) => {
-	const { userId, profileName, description } = req.body;
+	const { profileName, description, isRemove } = req.body;
+	const { userId } = req.params;
 	try {
 		if (!userId) {
 			return res.status(401).json({
@@ -211,8 +212,8 @@ export const updateUser = async (
 			});
 		}
 
-		let profileImgUrl: any = null;
-		let iconUrl: any = null;
+		let profileImgUrl: any;
+		let iconUrl: any;
 
 		const files: any = req.files;
 		if (files) {
@@ -232,11 +233,11 @@ export const updateUser = async (
 					profileName: profileName,
 					description: description,
 					icon: iconUrl,
-					profileImg: profileImgUrl,
+					profileImg: isRemove === "1" ? "" : profileImgUrl,
 				},
 				$inc: { __v: 1 },
 			},
-			{ new: true, returnOriginal: false }
+			{ new: true, returnNewDocument: false }
 		);
 
 		if (!updatedUser) {
@@ -251,6 +252,106 @@ export const updateUser = async (
 		}
 
 		return res.status(200).json({ updatedUser });
+	} catch (err) {
+		return res.status(500).json(err);
+	}
+};
+
+export const follow = async (req: express.Request, res: express.Response) => {
+	try {
+		if (!req.body.username) {
+			return res.status(401).json({
+				errors: [
+					{
+						param: "username",
+						msg: "無効なリクエストです",
+					},
+				],
+			});
+		}
+
+		const followingUser = await User.findOne({ username: req.body.username });
+		const user = await User.findById(req.user?.id);
+
+		if (!user || !followingUser) {
+			return res.status(404).json({
+				errors: [
+					{
+						param: "user",
+						msg: "ユーザーが存在しません",
+					},
+				],
+			});
+		}
+
+		// フォロー
+		let following;
+		let follower;
+		if (!user.following.includes(followingUser._id)) {
+			following = await User.findOneAndUpdate(
+				{ _id: user._id, __v: user.__v },
+				{ $push: { following: followingUser._id } },
+				{ new: true }
+			);
+
+			follower = await User.findOneAndUpdate(
+				{ _id: followingUser!._id, __v: followingUser.__v },
+				{ $push: { followers: user._id } },
+				{ new: true }
+			);
+		}
+
+		return res.status(200).json({ follow: following, follower: follower });
+	} catch (err) {
+		return res.status(500).json(err);
+	}
+};
+
+export const unfollow = async (req: express.Request, res: express.Response) => {
+	try {
+		if (!req.body.username) {
+			return res.status(401).json({
+				errors: [
+					{
+						param: "username",
+						msg: "無効なリクエストです",
+					},
+				],
+			});
+		}
+
+		const followingUser = await User.findOne({ username: req.body.username });
+		const user = await User.findById(req.user?.id);
+
+		if (!user || !followingUser) {
+			return res.status(404).json({
+				errors: [
+					{
+						param: "user",
+						msg: "ユーザーが存在しません",
+					},
+				],
+			});
+		}
+
+		// フォロー解除
+		let following;
+		let follower;
+		if (user.following.includes(followingUser._id)) {
+			following = await User.findOneAndUpdate(
+				{ _id: user._id, __v: user.__v },
+				{ $pull: { following: followingUser._id } },
+				{ new: true }
+			);
+
+			follower = await User.findOneAndUpdate(
+				{ _id: followingUser._id, __v: followingUser.__v },
+				{ $pull: { followers: user._id } },
+				{ new: true }
+			);
+		}
+
+		return res.status(200).json({ follow: following, follower: follower });
 	} catch (err) {
 		return res.status(500).json(err);
 	}

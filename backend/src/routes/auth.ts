@@ -1,9 +1,11 @@
 import express from "express";
 import {
+	follow,
 	forgotPassword,
 	login,
 	register,
 	resetPassword,
+	unfollow,
 	updateUser,
 } from "../services/userService";
 import {
@@ -96,10 +98,29 @@ router.post(
 
 // ユーザー更新APIの呼出
 router.patch(
-	"/update",
+	"/update/:userId",
+	verifyToken,
 	upload.fields([{ name: "profileImg" }, { name: "icon" }]),
 	(req: express.Request, res: express.Response) => {
 		updateUser(req, res);
+	}
+);
+
+// フォローAPIの呼出
+router.post(
+	"/follow",
+	verifyToken,
+	(req: express.Request, res: express.Response) => {
+		follow(req, res);
+	}
+);
+
+// フォロー解除APIの呼出
+router.post(
+	"/unfollow",
+	verifyToken,
+	(req: express.Request, res: express.Response) => {
+		unfollow(req, res);
 	}
 );
 

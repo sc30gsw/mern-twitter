@@ -91,6 +91,8 @@ const ForgotPasswordDialog = ({ open, onClose }: ForgotPasswordDialogProps) => {
 				icon: data.icon,
 				description: data.description,
 				profileImg: data.profileImg,
+				following: data.followings,
+				followers: data.followers,
 				__v: data.__v,
 			});
 

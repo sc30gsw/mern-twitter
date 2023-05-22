@@ -8,11 +8,36 @@ const tweetApi = {
 				"Content-Type": "multipart/form-data",
 			},
 		}),
+	// ツイート更新API
+	update: (tweetId: string, formData: FormData) =>
+		axiosClientFormData.patch(`tweet/update/${tweetId}`, formData, {
+			headers: {
+				"Content-Type": "multipart/form-data",
+			},
+		}),
 	// ツイート一覧検索API
 	search: (content?: string) => axiosClient.post("tweet/search", { content }),
 	// ユーザーツイート一覧取得API
 	searchUserTweets: (username: string) =>
 		axiosClient.post("tweet/searchUserTweets", { username }),
+	// ツイート詳細取得API
+	getTweet: (tweetId: string) => axiosClient.get(`tweet/${tweetId}`),
+	// ツイートビュー数取得API
+	getViewCount: (tweetId: string) => axiosClient.put(`tweet/${tweetId}/view`),
+	// リツイート作成API
+	createRetweet: (params: {
+		userId: string;
+		tweetId: string;
+		originalTweetId: string | undefined;
+	}) => axiosClient.post("tweet/createRetweet", params),
+	// リツイート削除API
+	deleteRetweet: (tweetId: string, originalTweetId: string) =>
+		axiosClient.delete("tweet/deleteRetweet", {
+			params: { tweetId: tweetId, originalTweetId: originalTweetId },
+		}),
+	// ツイート削除API
+	delete: (tweetId: string) =>
+		axiosClient.delete("tweet/delete", { params: { tweetId: tweetId } }),
 };
 
 export default tweetApi;

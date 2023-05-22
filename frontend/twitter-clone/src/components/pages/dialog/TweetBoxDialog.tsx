@@ -17,9 +17,10 @@ const TweetBoxDialog = ({ open, onClose }: TweetBoxDialogProps) => {
 				"& .MuiDialog-paper": {
 					width: "70%",
 					height: "40%",
-					position: "relative",
+					position: "absolute",
+					top: 10,
 					borderRadius: "30px",
-					minWidth: 320,
+					minWidth: 310,
 				},
 			}}
 		>
@@ -40,7 +41,7 @@ const TweetBoxDialog = ({ open, onClose }: TweetBoxDialogProps) => {
 				<CloseIcon />
 			</IconButton>
 			<DialogContent>
-				<TweetBox title={undefined} rows={4} onClose={onClose} />
+				<TweetBox rows={4} onClose={onClose} />
 			</DialogContent>
 		</Dialog>
 	);

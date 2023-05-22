@@ -122,6 +122,8 @@ const LoginDialog = ({ open, registerOpen, onClose }: LoginDialogProps) => {
 				icon: user.icon,
 				description: user.description,
 				profileImg: user.profileImg,
+				following: user.followings,
+				followers: user.followers,
 				__v: user.__v,
 			});
 

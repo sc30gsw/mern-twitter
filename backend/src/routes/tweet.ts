@@ -1,8 +1,14 @@
 import express from "express";
 import {
 	create,
+	createRetweet,
+	deleteRetweet,
+	getTweet,
+	getViewCount,
 	searchTweets,
 	searchUserTweets,
+	update,
+	deleteTweet,
 } from "../services/tweetService";
 import verifyToken from "../middleware/tokenHandler";
 import { validContentLength } from "../services/validation/tweetValid";
@@ -16,10 +22,22 @@ router.post(
 	"/create",
 	validContentLength,
 	printErrors,
-	upload.array("tweetImage", 4),
 	verifyToken,
+	upload.array("tweetImage", 4),
 	(req: express.Request, res: express.Response) => {
 		create(req, res);
+	}
+);
+
+// ツイート更新APIの呼出
+router.patch(
+	"/update/:tweetId",
+	validContentLength,
+	printErrors,
+	verifyToken,
+	upload.array("tweetImage", 4),
+	(req: express.Request, res: express.Response) => {
+		update(req, res);
 	}
 );
 
@@ -34,6 +52,49 @@ router.post(
 	verifyToken,
 	(req: express.Request, res: express.Response) => {
 		searchUserTweets(req, res);
+	}
+);
+
+// ツイートビュー数取得APIの呼出
+router.put("/:tweetId/view", (req: express.Request, res: express.Response) => {
+	getViewCount(req, res);
+});
+
+// ツイート詳細取得APIの呼出
+router.get(
+	"/:tweetId",
+	verifyToken,
+	(req: express.Request, res: express.Response) => {
+		getTweet(req, res);
+	}
+);
+
+// リツイート作成APIの呼出
+router.post(
+	"/createRetweet",
+	validContentLength,
+	printErrors,
+	verifyToken,
+	(req: express.Request, res: express.Response) => {
+		createRetweet(req, res);
+	}
+);
+
+// リツイート削除APIの呼出
+router.delete(
+	"/deleteRetweet",
+	verifyToken,
+	(req: express.Request, res: express.Response) => {
+		deleteRetweet(req, res);
+	}
+);
+
+// ツイート削除APIの呼出
+router.delete(
+	"/delete",
+	verifyToken,
+	(req: express.Request, res: express.Response) => {
+		deleteTweet(req, res);
 	}
 );
 
