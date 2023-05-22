@@ -8,6 +8,7 @@ import {
 	searchTweets,
 	searchUserTweets,
 	update,
+	deleteTweet,
 } from "../services/tweetService";
 import verifyToken from "../middleware/tokenHandler";
 import { validContentLength } from "../services/validation/tweetValid";
@@ -85,6 +86,15 @@ router.delete(
 	verifyToken,
 	(req: express.Request, res: express.Response) => {
 		deleteRetweet(req, res);
+	}
+);
+
+// ツイート削除APIの呼出
+router.delete(
+	"/delete",
+	verifyToken,
+	(req: express.Request, res: express.Response) => {
+		deleteTweet(req, res);
 	}
 );
 

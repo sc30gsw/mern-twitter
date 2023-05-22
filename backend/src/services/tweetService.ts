@@ -1,5 +1,7 @@
 import express from "express";
 import Tweet from "../models/Tweet";
+import Comment from "../models/Comment";
+import mongoose from "mongoose";
 
 export const create = async (req: express.Request, res: express.Response) => {
 	try {
@@ -521,6 +523,61 @@ export const deleteRetweet = async (
 			_id: req.query.tweetId,
 			userId: req.user?.id,
 		});
+
+		return res.status(200).json(deletedTweet);
+	} catch (err) {
+		return res.status(500).json(err);
+	}
+};
+
+export const deleteTweet = async (
+	req: express.Request,
+	res: express.Response
+) => {
+	try {
+		if (!req.query.tweetId) {
+			return res.status(401).json({
+				errors: [
+					{
+						param: "tweetId",
+						msg: "無効なリクエストです",
+					},
+				],
+			});
+		}
+
+		const tweet = await Tweet.findById(req.query.tweetId);
+
+		if (!tweet) {
+			return res.status(400).json({
+				errors: [
+					{
+						param: "tweet",
+						msg: "ツイートが存在しません",
+					},
+				],
+			});
+		}
+
+		if (!req.user?.id) {
+			return res.status(401).json({
+				errors: [
+					{
+						param: "user",
+						msg: "無効なリクエストです",
+					},
+				],
+			});
+		}
+
+		let deletedTweet;
+		if (tweet.retweet) {
+			await Tweet.findByIdAndDelete(req.query.tweetId);
+		} else {
+			await Comment.deleteMany({ tweetId: req.query.tweetId });
+			await Tweet.deleteMany({ "retweet.originalTweetId": req.query.tweetId });
+			deletedTweet = await Tweet.findByIdAndDelete(req.query.tweetId);
+		}
 
 		return res.status(200).json(deletedTweet);
 	} catch (err) {

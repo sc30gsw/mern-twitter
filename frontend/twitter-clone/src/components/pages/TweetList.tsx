@@ -29,6 +29,7 @@ import { useUserContext } from "../../contexts/UserProvider";
 import CommentDialog from "./dialog/CommentDialog";
 import { useCommentDialogContext } from "../../contexts/TweetBoxDialogProvider";
 import likeApi from "../../api/likeApi";
+import DeleteTweetDialog from "./dialog/DelteDialog";
 
 const IMAGE_URL = process.env.REACT_APP_IMAGE_URL as string;
 
@@ -82,6 +83,8 @@ const TweetList = ({ tweets }: TweetListProps) => {
 	const [originalTweetId, setOriginalTweetId] = useState<string>("");
 	const [retweetUserIds, setRetweetUserIds] = useState<string[]>([]);
 	const [initialImageIndex, setInitialImageIndex] = useState<number>(0);
+	const [deleteId, setDeleteId] = useState<string>("");
+	const [deleteOpen, setDeleteOpen] = useState<boolean>(false);
 
 	const currentTime = new Date();
 	const thirtyMinutesAgo = new Date(currentTime.getTime() - 30 * 60 * 1000);
@@ -146,6 +149,29 @@ const TweetList = ({ tweets }: TweetListProps) => {
 	};
 
 	const handleCommentClose = () => setCommentOpenDialog(false);
+
+	const handleDeleteOpen = (tweetId: string) => {
+		setDeleteId(tweetId);
+		setDeleteOpen(true);
+	};
+
+	const handleDeleteClose = () => {
+		setDeleteId("");
+		setDeleteOpen(false);
+	};
+
+	const handleDelete = async (tweetId: string) => {
+		try {
+			await tweetApi.delete(tweetId);
+			console.log("ツイートの削除に成功しました");
+			const res = await tweetApi.search();
+
+			setTweets(res.data);
+			setDeleteOpen(false);
+		} catch (err) {
+			console.log(err);
+		}
+	};
 
 	return (
 		<>
@@ -308,9 +334,16 @@ const TweetList = ({ tweets }: TweetListProps) => {
 															<MoreHorizIcon />
 														</IconButton>
 														<Menu {...bindMenu(popupState)}>
-															{tweet.userId === user?._id &&
-															!tweet.retweetUsers.includes(user?._id) ? (
-																<MenuItem onClick={popupState.close}>
+															{tweet.retweet &&
+															Object.keys(tweet.retweet).length !== 0 ? (
+																<Box></Box>
+															) : tweet.userId === user?._id ? (
+																<MenuItem
+																	onClick={() => {
+																		popupState.close();
+																		handleDeleteOpen(tweet._id);
+																	}}
+																>
 																	<ListItemIcon>
 																		<DeleteOutlineOutlinedIcon
 																			sx={{ color: "red" }}
@@ -456,6 +489,13 @@ const TweetList = ({ tweets }: TweetListProps) => {
 				tweetId={selectedTweetId}
 				open={commentOpenDialog}
 				onClose={handleCommentClose}
+			/>
+			<DeleteTweetDialog
+				open={deleteOpen}
+				title="Tweet"
+				deleteId={deleteId}
+				handleDelete={handleDelete}
+				onClose={handleDeleteClose}
 			/>
 		</>
 	);

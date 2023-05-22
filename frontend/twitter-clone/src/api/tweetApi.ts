@@ -35,6 +35,9 @@ const tweetApi = {
 		axiosClient.delete("tweet/deleteRetweet", {
 			params: { tweetId: tweetId, originalTweetId: originalTweetId },
 		}),
+	// ツイート削除API
+	delete: (tweetId: string) =>
+		axiosClient.delete("tweet/delete", { params: { tweetId: tweetId } }),
 };
 
 export default tweetApi;

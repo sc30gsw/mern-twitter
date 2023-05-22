@@ -99,6 +99,7 @@ const TweetDetail = () => {
 	const [isCommentDelete, setIsCommentDelete] = useState<boolean>(false);
 	const [commentId, setCommentId] = useState<string>("");
 	const [likeCount, setLikeCount] = useState<number>(0);
+	const [deleteId, setDeleteId] = useState<string>("");
 
 	useEffect(() => {
 		const getTweetAndComments = async () => {
@@ -323,6 +324,22 @@ const TweetDetail = () => {
 		setCommentOpenDialog(true);
 	};
 
+	const handleDeleteOpen = (tweetId: string) => {
+		setDeleteId(tweetId);
+		setDeleteOpen(true);
+	};
+
+	const handleDelete = async (tweetId: string) => {
+		try {
+			await tweetApi.delete(tweetId);
+			console.log("ツイートの削除に成功しました");
+			setDeleteOpen(false);
+			navigate("/");
+		} catch (err) {
+			console.log(err);
+		}
+	};
+
 	return (
 		<>
 			<Box
@@ -427,7 +444,9 @@ const TweetDetail = () => {
 					</Box>
 					<Box>
 						{tweet?.userId === user?._id &&
-							!tweet?.retweetUsers.includes(user?._id as string) && (
+							(tweet?.retweet && Object.keys(tweet.retweet).length !== 0 ? (
+								<Box></Box>
+							) : (
 								<PopupState variant="popover" popupId="demo-popup-menu">
 									{(popupState) => (
 										<>
@@ -435,9 +454,13 @@ const TweetDetail = () => {
 												<MoreHorizIcon />
 											</IconButton>
 											<Menu {...bindMenu(popupState)}>
-												{tweet?.userId === user?._id &&
-												!tweet?.retweetUsers.includes(user?._id as string) ? (
-													<MenuItem onClick={popupState.close}>
+												{tweet?.userId === user?._id ? (
+													<MenuItem
+														onClick={() => {
+															popupState.close();
+															handleDeleteOpen(tweet?._id as string);
+														}}
+													>
 														<ListItemIcon>
 															<DeleteOutlineOutlinedIcon
 																sx={{ color: "red" }}
@@ -472,7 +495,7 @@ const TweetDetail = () => {
 										</>
 									)}
 								</PopupState>
-							)}
+							))}
 					</Box>
 				</Box>
 			</Box>
@@ -1013,8 +1036,8 @@ const TweetDetail = () => {
 				title={isCommentDelete ? "Comment" : "Tweet"}
 				open={deleteOpen}
 				onClose={() => setDeleteOpen(false)}
-				deleteId={isCommentDelete ? commentId : ""}
-				handleDelete={isCommentDelete ? handleCommentDelete : () => {}}
+				deleteId={isCommentDelete ? commentId : deleteId}
+				handleDelete={isCommentDelete ? handleCommentDelete : handleDelete}
 			/>
 		</>
 	);
