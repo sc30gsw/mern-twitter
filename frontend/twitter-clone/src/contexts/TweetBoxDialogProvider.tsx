@@ -18,6 +18,15 @@ const EditTweetBoxDialog = createContext<
 	EditTweetBoxDialogContextType | undefined
 >(undefined);
 
+type CommentDialogContextType = {
+	commentOpenDialog: boolean;
+	setCommentOpenDialog: (editOpenDialog: boolean) => void;
+};
+
+const CommentDialog = createContext<CommentDialogContextType | undefined>(
+	undefined
+);
+
 export const useTweetBoxDialogContext = () => {
 	const context = useContext(TweetBoxDialog);
 	if (!context) {
@@ -34,6 +43,14 @@ export const useEditTweetBoxDialogContext = () => {
 	return context;
 };
 
+export const useCommentDialogContext = () => {
+	const context = useContext(CommentDialog);
+	if (!context) {
+		throw new Error("useCommentContext must be used within a TweetProvider");
+	}
+	return context;
+};
+
 type TweetBoxDialogProviderProps = {
 	children: React.ReactNode;
 };
@@ -43,13 +60,18 @@ export const TweetBoxDialogProvider = ({
 }: TweetBoxDialogProviderProps) => {
 	const [openDialog, setOpenDialog] = useState<boolean>(false);
 	const [editOpenDialog, setEditOpenDialog] = useState<boolean>(false);
+	const [commentOpenDialog, setCommentOpenDialog] = useState<boolean>(false);
 
 	return (
 		<TweetBoxDialog.Provider value={{ openDialog, setOpenDialog }}>
 			<EditTweetBoxDialog.Provider
 				value={{ editOpenDialog, setEditOpenDialog }}
 			>
-				{children}
+				<CommentDialog.Provider
+					value={{ commentOpenDialog, setCommentOpenDialog }}
+				>
+					{children}
+				</CommentDialog.Provider>
 			</EditTweetBoxDialog.Provider>
 		</TweetBoxDialog.Provider>
 	);

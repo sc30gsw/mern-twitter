@@ -26,6 +26,8 @@ import TweetImageDialog from "./dialog/TweetImageDialog";
 import { useUserContext } from "../../contexts/UserProvider";
 import commentApi from "../../api/commentApi";
 import { Comment } from "../../types/Comment";
+import { useCommentDialogContext } from "../../contexts/TweetBoxDialogProvider";
+import CommentDialog from "./dialog/CommentDialog";
 
 interface ITweetImage {
 	imageCount: number;
@@ -62,6 +64,7 @@ const IMAGE_URL = process.env.REACT_APP_IMAGE_URL as string;
 
 const TweetDetail = () => {
 	const { user } = useUserContext();
+	const { commentOpenDialog, setCommentOpenDialog } = useCommentDialogContext();
 	const { tweetId } = useParams();
 	const navigate = useNavigate();
 	const goBack = () => navigate(-1);
@@ -109,7 +112,7 @@ const TweetDetail = () => {
 		};
 
 		getTweetAndComments();
-	}, [tweetId, setComments]);
+	}, [tweetId, setComments, commentOpenDialog]);
 
 	const progress = (charCount / 140) * 100;
 	const remainingChars = 140 - charCount;
@@ -275,6 +278,11 @@ const TweetDetail = () => {
 			console.log(errors);
 			setLoading(false);
 		}
+	};
+
+	const handleCommentOpen = (tweetId: string) => {
+		setSelectedTweetId(tweetId);
+		setCommentOpenDialog(true);
 	};
 
 	return (
@@ -506,6 +514,7 @@ const TweetDetail = () => {
 						fontSize="20px"
 						color=""
 						retweetUsers={tweet?.retweetUsers ? tweet.retweetUsers : []}
+						handleCommentOpen={() => setCommentOpenDialog(true)}
 					/>
 				</Box>
 			) : (
@@ -513,7 +522,7 @@ const TweetDetail = () => {
 			)}
 			{focus && (
 				<Box sx={{ display: "flex", ml: 10, mt: 2, color: "#898989" }}>
-					Replying to{" "}
+					Replying to
 					<Link
 						to={`/user/${
 							tweet?.retweet && Object.keys(tweet.retweet).length !== 0
@@ -528,221 +537,70 @@ const TweetDetail = () => {
 					</Link>
 				</Box>
 			)}
-			<Box
-				component="form"
-				encType="multipart/form-data"
-				noValidate
-				sx={{
-					width: "100%",
-					display: "flex",
-					ml: "20px",
-					paddingBottom: "10px",
-					borderBottom: "solid 1px #cacaca",
-				}}
-				onSubmit={handleSubmit}
-			>
-				<Link to={`/user/${user?.username}`}>
-					<Avatar
-						src={user?.icon ? IMAGE_URL + user?.icon : noAvatar}
-						alt="noAvatar"
-						sx={{ mt: "20px", mr: "10px" }}
-					/>
-				</Link>
+			{commentOpenDialog || (
 				<Box
+					component="form"
+					encType="multipart/form-data"
+					noValidate
 					sx={{
+						width: "100%",
 						display: "flex",
-						flexDirection: "column",
-						flexGrow: 1,
-						position: "relative",
+						ml: "20px",
+						paddingBottom: "10px",
+						borderBottom: "solid 1px #cacaca",
 					}}
+					onSubmit={handleSubmit}
 				>
-					<Box sx={{ display: "flex", alignItems: "center" }}>
-						<TextField
-							fullWidth
-							variant="outlined"
-							id="comment"
-							name="comment"
-							value={comment}
-							label="Tweet your reply!"
-							placeholder="Tweet your reply!"
-							margin="normal"
-							multiline
-							onChange={(e) => {
-								setComment(e.target.value);
-								setIsInputEmpty(e.target.value === "");
-								setCharCount(e.target.value.length);
-							}}
-							error={commentErrMsg !== ""}
-							helperText={commentErrMsg}
-							inputProps={{ maxLength: 140 }}
-							sx={{
-								"& .MuiOutlinedInput-root": {
-									"& fieldset": {
-										border: "none",
-									},
-								},
-							}}
-							onFocus={() => setFocus(true)}
+					<Link to={`/user/${user?.username}`}>
+						<Avatar
+							src={user?.icon ? IMAGE_URL + user?.icon : noAvatar}
+							alt="noAvatar"
+							sx={{ mt: "20px", mr: "10px" }}
 						/>
-						{!focus && (
-							<LoadingButton
-								type="submit"
-								disabled
-								sx={{
-									height: "30px",
-									mr: 5,
-									padding: "5px 20px",
-									borderRadius: "40px",
-									textTransform: "none",
-									background: "#1DA1F2",
-									color: "#fff",
-									"&.Mui-disabled": {
-										opacity: 0.7,
-										color: "#fff",
-									},
-									":hover": { background: "#1da0f29c" },
-								}}
-							>
-								Reply
-							</LoadingButton>
-						)}
-					</Box>
-					{/* 画像プレビュー */}
-					<Box sx={{ display: "flex", flexWrap: "wrap", position: "relative" }}>
-						{imagePreviews.map((imagePreview, index) => (
-							<Box
-								key={index}
-								sx={{
-									position: "relative",
-									width: "100px",
-									height: "100px",
-									margin: "5px",
-								}}
-							>
-								<IconButton
-									sx={{
-										position: "absolute",
-										left: -10,
-										top: -5,
-										background: "#6f7070",
-										color: "white",
-										":hover": {
-											background: "#6f7070",
-											opacity: 0.7,
-										},
-									}}
-									onClick={() => handleImageRemove(imagePreview)}
-								>
-									<CloseIcon />
-								</IconButton>
-								<img
-									src={imagePreview}
-									alt={`tweet_image_${index}`}
-									width="100"
-									height="100"
-									style={{ objectFit: "cover" }}
-								/>
-							</Box>
-						))}
-					</Box>
+					</Link>
 					<Box
 						sx={{
-							display: !focus ? "none" : "flex",
-							alignItems: "center",
-							justifyContent: "space-between",
+							display: "flex",
+							flexDirection: "column",
+							flexGrow: 1,
+							position: "relative",
 						}}
 					>
-						<Box
-							sx={{
-								display: "flex",
-							}}
-						>
-							<IconButton
-								component="label"
-								htmlFor="commentImage"
-								disabled={images.length === 4}
+						<Box sx={{ display: "flex", alignItems: "center" }}>
+							<TextField
+								fullWidth
+								variant="outlined"
+								id="comment"
+								name="comment"
+								value={comment}
+								label="Tweet your reply!"
+								placeholder="Tweet your reply!"
+								margin="normal"
+								multiline
+								onChange={(e) => {
+									setComment(e.target.value);
+									setIsInputEmpty(e.target.value === "");
+									setCharCount(e.target.value.length);
+								}}
+								error={commentErrMsg !== ""}
+								helperText={commentErrMsg}
+								inputProps={{ maxLength: 140 }}
 								sx={{
-									color: "#1DA1F2",
-									":hover": {
-										cursor: "pointer",
-										background: "#c2dff0",
-										borderRadius: "50%",
+									"& .MuiOutlinedInput-root": {
+										"& fieldset": {
+											border: "none",
+										},
 									},
 								}}
-							>
-								<input
-									type="file"
-									id="commentImage"
-									name="commentImage"
-									accept="video/mp4 image/png image/jpeg audio/mpeg"
-									multiple
-									style={{ display: "none" }}
-									onChange={handleImageChange}
-								/>
-								<ImageIcon />
-							</IconButton>
-							<IconButton
-								sx={{
-									color: "#1DA1F2",
-									":hover": {
-										cursor: "pointer",
-										background: "#c2dff0",
-										borderRadius: "50%",
-									},
-								}}
-							>
-								<EmojiEmotionsIcon />
-							</IconButton>
-						</Box>
-						<Box>
-							<Box
-								sx={{
-									mt: 1,
-									mb: 2,
-									mr: 2,
-									position: "relative",
-									display: "inline-flex",
-								}}
-							>
-								<CircularProgress
-									key={getColor(charCount)}
-									variant="determinate"
-									value={progress}
-									style={{
-										color: getColor(charCount),
-									}}
-								/>
-								{remainingChars <= 20 && (
-									<Box
-										sx={{
-											top: 0,
-											left: 0,
-											bottom: 0,
-											right: 0,
-											position: "absolute",
-											display: "flex",
-											alignItems: "center",
-											justifyContent: "center",
-										}}
-									>
-										<Typography
-											variant="caption"
-											component="div"
-											color="text.secondary"
-										>
-											{remainingChars}
-										</Typography>
-									</Box>
-								)}
-							</Box>
-							{focus && (
+								onFocus={() => setFocus(true)}
+							/>
+							{!focus && (
 								<LoadingButton
 									type="submit"
-									loading={loading}
-									disabled={isInputEmpty}
+									disabled
 									sx={{
+										height: "30px",
 										mr: 5,
-										mb: 4,
 										padding: "5px 20px",
 										borderRadius: "40px",
 										textTransform: "none",
@@ -759,9 +617,164 @@ const TweetDetail = () => {
 								</LoadingButton>
 							)}
 						</Box>
+						{/* 画像プレビュー */}
+						<Box
+							sx={{ display: "flex", flexWrap: "wrap", position: "relative" }}
+						>
+							{imagePreviews.map((imagePreview, index) => (
+								<Box
+									key={index}
+									sx={{
+										position: "relative",
+										width: "100px",
+										height: "100px",
+										margin: "5px",
+									}}
+								>
+									<IconButton
+										sx={{
+											position: "absolute",
+											left: -10,
+											top: -5,
+											background: "#6f7070",
+											color: "white",
+											":hover": {
+												background: "#6f7070",
+												opacity: 0.7,
+											},
+										}}
+										onClick={() => handleImageRemove(imagePreview)}
+									>
+										<CloseIcon />
+									</IconButton>
+									<img
+										src={imagePreview}
+										alt={`tweet_image_${index}`}
+										width="100"
+										height="100"
+										style={{ objectFit: "cover" }}
+									/>
+								</Box>
+							))}
+						</Box>
+						<Box
+							sx={{
+								display: !focus ? "none" : "flex",
+								alignItems: "center",
+								justifyContent: "space-between",
+							}}
+						>
+							<Box
+								sx={{
+									display: "flex",
+								}}
+							>
+								<IconButton
+									component="label"
+									htmlFor="commentImage"
+									disabled={images.length === 4}
+									sx={{
+										color: "#1DA1F2",
+										":hover": {
+											cursor: "pointer",
+											background: "#c2dff0",
+											borderRadius: "50%",
+										},
+									}}
+								>
+									<input
+										type="file"
+										id="commentImage"
+										name="commentImage"
+										accept="video/mp4 image/png image/jpeg audio/mpeg"
+										multiple
+										style={{ display: "none" }}
+										onChange={handleImageChange}
+									/>
+									<ImageIcon />
+								</IconButton>
+								<IconButton
+									sx={{
+										color: "#1DA1F2",
+										":hover": {
+											cursor: "pointer",
+											background: "#c2dff0",
+											borderRadius: "50%",
+										},
+									}}
+								>
+									<EmojiEmotionsIcon />
+								</IconButton>
+							</Box>
+							<Box>
+								<Box
+									sx={{
+										mt: 1,
+										mb: 2,
+										mr: 2,
+										position: "relative",
+										display: "inline-flex",
+									}}
+								>
+									<CircularProgress
+										key={getColor(charCount)}
+										variant="determinate"
+										value={progress}
+										style={{
+											color: getColor(charCount),
+										}}
+									/>
+									{remainingChars <= 20 && (
+										<Box
+											sx={{
+												top: 0,
+												left: 0,
+												bottom: 0,
+												right: 0,
+												position: "absolute",
+												display: "flex",
+												alignItems: "center",
+												justifyContent: "center",
+											}}
+										>
+											<Typography
+												variant="caption"
+												component="div"
+												color="text.secondary"
+											>
+												{remainingChars}
+											</Typography>
+										</Box>
+									)}
+								</Box>
+								{focus && (
+									<LoadingButton
+										type="submit"
+										loading={loading}
+										disabled={isInputEmpty}
+										sx={{
+											mr: 5,
+											mb: 4,
+											padding: "5px 20px",
+											borderRadius: "40px",
+											textTransform: "none",
+											background: "#1DA1F2",
+											color: "#fff",
+											"&.Mui-disabled": {
+												opacity: 0.7,
+												color: "#fff",
+											},
+											":hover": { background: "#1da0f29c" },
+										}}
+									>
+										Reply
+									</LoadingButton>
+								)}
+							</Box>
+						</Box>
 					</Box>
 				</Box>
-			</Box>
+			)}
 			<Box>
 				{comments.map((comment) => (
 					<List
@@ -877,6 +890,12 @@ const TweetDetail = () => {
 				userId={tweetUserId}
 				retweetUsers={retweetUserIds}
 				originalTweetId={originalTweetId}
+				handleCommentOpen={handleCommentOpen}
+			/>
+			<CommentDialog
+				tweetId={tweetId as string}
+				open={commentOpenDialog}
+				onClose={() => setCommentOpenDialog(false)}
 			/>
 		</>
 	);

@@ -26,6 +26,8 @@ import { useState } from "react";
 import TweetImageDialog from "./dialog/TweetImageDialog";
 import RepeatOutlinedIcon from "@mui/icons-material/RepeatOutlined";
 import { useUserContext } from "../../contexts/UserProvider";
+import CommentDialog from "./dialog/CommentDialog";
+import { useCommentDialogContext } from "../../contexts/TweetBoxDialogProvider";
 
 const IMAGE_URL = process.env.REACT_APP_IMAGE_URL as string;
 
@@ -71,6 +73,7 @@ type TweetListProps = {
 const TweetList = ({ tweets }: TweetListProps) => {
 	const { user } = useUserContext();
 	const { setTweets } = useTweetContext();
+	const { commentOpenDialog, setCommentOpenDialog } = useCommentDialogContext();
 	const [open, setOpen] = useState<boolean>(false);
 	const [selectedTweetId, setSelectedTweetId] = useState<string>("");
 	const [tweetUserId, setTweetUserId] = useState<string>("");
@@ -135,6 +138,13 @@ const TweetList = ({ tweets }: TweetListProps) => {
 		setRetweetUserIds([]);
 		setInitialImageIndex(0);
 	};
+
+	const handleCommentOpen = (tweetId: string) => {
+		setSelectedTweetId(tweetId);
+		setCommentOpenDialog(true);
+	};
+
+	const handleCommentClose = () => setCommentOpenDialog(false);
 
 	return (
 		<>
@@ -424,6 +434,7 @@ const TweetList = ({ tweets }: TweetListProps) => {
 									fontSize="20px"
 									color=""
 									retweetUsers={tweet.retweetUsers ? tweet.retweetUsers : []}
+									handleCommentOpen={handleCommentOpen}
 								/>
 							</Box>
 							<TweetImageDialog
@@ -435,10 +446,16 @@ const TweetList = ({ tweets }: TweetListProps) => {
 								userId={tweetUserId}
 								retweetUsers={retweetUserIds}
 								originalTweetId={originalTweetId}
+								handleCommentOpen={handleCommentOpen}
 							/>
 						</List>
 					))}
 			</Box>
+			<CommentDialog
+				tweetId={selectedTweetId}
+				open={commentOpenDialog}
+				onClose={handleCommentClose}
+			/>
 		</>
 	);
 };

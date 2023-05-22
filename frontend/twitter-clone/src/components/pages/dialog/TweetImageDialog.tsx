@@ -1,7 +1,5 @@
 import { Box, Dialog, DialogContent, IconButton, Tooltip } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import KeyboardDoubleArrowLeftOutlinedIcon from "@mui/icons-material/KeyboardDoubleArrowLeftOutlined";
-import KeyboardDoubleArrowRightOutlinedIcon from "@mui/icons-material/KeyboardDoubleArrowRightOutlined";
 import ArrowForwardOutlinedIcon from "@mui/icons-material/ArrowForwardOutlined";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import { useEffect, useState } from "react";
@@ -18,6 +16,7 @@ type TweetImageDialogProps = {
 	userId: string;
 	retweetUsers: string[];
 	originalTweetId: string;
+	handleCommentOpen: (tweetId: string) => void;
 };
 
 const TweetImageDialog = ({
@@ -29,6 +28,7 @@ const TweetImageDialog = ({
 	userId,
 	retweetUsers,
 	originalTweetId,
+	handleCommentOpen,
 }: TweetImageDialogProps) => {
 	const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
 
@@ -143,6 +143,7 @@ const TweetImageDialog = ({
 						color="white"
 						retweetUsers={retweetUsers}
 						originalTweetId={originalTweetId}
+						handleCommentOpen={handleCommentOpen}
 					/>
 				</Box>
 			</DialogContent>

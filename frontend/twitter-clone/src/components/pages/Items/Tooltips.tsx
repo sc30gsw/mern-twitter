@@ -9,6 +9,8 @@ import { useTweetContext } from "../../../contexts/TweetProvider";
 import { useEffect, useState } from "react";
 import { useUserContext } from "../../../contexts/UserProvider";
 import { useNavigate } from "react-router-dom";
+import commentApi from "../../../api/commentApi";
+import { useCommentDialogContext } from "../../../contexts/TweetBoxDialogProvider";
 
 type TooltipsProps = {
 	userId: string;
@@ -17,6 +19,7 @@ type TooltipsProps = {
 	fontSize: string;
 	color: string;
 	retweetUsers: string[];
+	handleCommentOpen: (tweetId: string) => void;
 };
 
 const Tooltips = ({
@@ -26,14 +29,18 @@ const Tooltips = ({
 	fontSize,
 	color,
 	retweetUsers,
+	handleCommentOpen,
 }: TooltipsProps) => {
 	const { user } = useUserContext();
 	const { setTweets } = useTweetContext();
 	const navigate = useNavigate();
+	const { commentOpenDialog } = useCommentDialogContext();
 
 	const [viewCount, setViewCount] = useState<number>(0);
+	const [commentCount, setCommentCount] = useState<number>(0);
 	const [hover, setHover] = useState<boolean>(false);
 	const [viewHover, setViewHover] = useState<boolean>(false);
+	const [commentHover, setCommentHover] = useState<boolean>(false);
 
 	useEffect(() => {
 		const getViewCount = async () => {
@@ -44,8 +51,17 @@ const Tooltips = ({
 			const tweets = await tweetApi.search();
 			setTweets(tweets.data);
 		};
+
+		const getComments = async () => {
+			const res = await commentApi.getComments(
+				originalTweetId ? originalTweetId : tweetId
+			);
+			setCommentCount(res.data.length);
+		};
+
 		getViewCount();
-	}, [tweetId, originalTweetId, setTweets]);
+		getComments();
+	}, [tweetId, originalTweetId, setTweets, commentOpenDialog]);
 
 	const handleRetweet = async () => {
 		try {
@@ -79,9 +95,39 @@ const Tooltips = ({
 	return (
 		<>
 			<Tooltip title="Reply">
-				<IconButton sx={{ color: color }}>
-					<ModeCommentOutlinedIcon sx={{ fontSize: fontSize }} />
-				</IconButton>
+				<Box
+					sx={{
+						display: "flex",
+						alignItems: "center",
+					}}
+					onMouseEnter={() => setCommentHover(true)}
+					onMouseLeave={() => setCommentHover(false)}
+				>
+					<IconButton
+						sx={{
+							color: commentHover ? "#1DA1F2" : color,
+							background: commentHover ? "#1da0f272" : "",
+							":hover": {
+								background: "#1da0f272",
+							},
+						}}
+						onClick={() =>
+							handleCommentOpen(originalTweetId ? originalTweetId : tweetId)
+						}
+					>
+						<ModeCommentOutlinedIcon sx={{ fontSize: fontSize }} />
+					</IconButton>
+					<Typography
+						sx={{
+							color: commentHover ? "#1DA1F2" : "#898989",
+							":hover": {
+								cursor: "pointer",
+							},
+						}}
+					>
+						{commentCount > 0 && commentCount}
+					</Typography>
+				</Box>
 			</Tooltip>
 			<Tooltip
 				title={
