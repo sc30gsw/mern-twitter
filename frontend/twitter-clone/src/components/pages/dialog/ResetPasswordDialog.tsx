@@ -94,6 +94,8 @@ const ResetPasswordDialog = () => {
 				icon: updatedUser.icon,
 				description: updatedUser.description,
 				profileImg: updatedUser.profileImg,
+				following: updatedUser.followings,
+				followers: updatedUser.followers,
 				__v: updatedUser.__v,
 			});
 

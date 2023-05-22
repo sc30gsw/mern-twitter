@@ -29,6 +29,11 @@ const authApi = {
 				"Content-Type": "multipart/form-data",
 			},
 		}),
+	// フォローAPI
+	follow: (username: string) => axiosClient.post("auth/follow", { username }),
+	// フォロー解除API
+	unfollow: (username: string) =>
+		axiosClient.post("auth/unfollow", { username }),
 };
 
 export default authApi;

@@ -257,6 +257,106 @@ export const updateUser = async (
 	}
 };
 
+export const follow = async (req: express.Request, res: express.Response) => {
+	try {
+		if (!req.body.username) {
+			return res.status(401).json({
+				errors: [
+					{
+						param: "username",
+						msg: "無効なリクエストです",
+					},
+				],
+			});
+		}
+
+		const followingUser = await User.findOne({ username: req.body.username });
+		const user = await User.findById(req.user?.id);
+
+		if (!user || !followingUser) {
+			return res.status(404).json({
+				errors: [
+					{
+						param: "user",
+						msg: "ユーザーが存在しません",
+					},
+				],
+			});
+		}
+
+		// フォロー
+		let following;
+		let follower;
+		if (!user.following.includes(followingUser._id)) {
+			following = await User.findOneAndUpdate(
+				{ _id: user._id, __v: user.__v },
+				{ $push: { following: followingUser._id } },
+				{ new: true }
+			);
+
+			follower = await User.findOneAndUpdate(
+				{ _id: followingUser!._id, __v: followingUser.__v },
+				{ $push: { followers: user._id } },
+				{ new: true }
+			);
+		}
+
+		return res.status(200).json({ follow: following, follower: follower });
+	} catch (err) {
+		return res.status(500).json(err);
+	}
+};
+
+export const unfollow = async (req: express.Request, res: express.Response) => {
+	try {
+		if (!req.body.username) {
+			return res.status(401).json({
+				errors: [
+					{
+						param: "username",
+						msg: "無効なリクエストです",
+					},
+				],
+			});
+		}
+
+		const followingUser = await User.findOne({ username: req.body.username });
+		const user = await User.findById(req.user?.id);
+
+		if (!user || !followingUser) {
+			return res.status(404).json({
+				errors: [
+					{
+						param: "user",
+						msg: "ユーザーが存在しません",
+					},
+				],
+			});
+		}
+
+		// フォロー解除
+		let following;
+		let follower;
+		if (user.following.includes(followingUser._id)) {
+			following = await User.findOneAndUpdate(
+				{ _id: user._id, __v: user.__v },
+				{ $pull: { following: followingUser._id } },
+				{ new: true }
+			);
+
+			follower = await User.findOneAndUpdate(
+				{ _id: followingUser._id, __v: followingUser.__v },
+				{ $pull: { followers: user._id } },
+				{ new: true }
+			);
+		}
+
+		return res.status(200).json({ follow: following, follower: follower });
+	} catch (err) {
+		return res.status(500).json(err);
+	}
+};
+
 const getUser = async (
 	userId: string | undefined,
 	username: string | undefined,

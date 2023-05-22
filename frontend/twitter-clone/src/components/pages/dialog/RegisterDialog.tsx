@@ -199,6 +199,8 @@ const RegisterDialog = ({ open, loginOpen, onClose }: RegisterDialogProps) => {
 				icon: user.icon,
 				description: user.description,
 				profileImg: user.profileImg,
+				following: user.followings,
+				followers: user.followers,
 				__v: user.__v,
 			});
 
