@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node_modules/.bin/ts-node backend/index.ts",
     "start:dev": "nodemon --exec node_modules/.bin/ts-node backend/index.ts",
-    "heroku-postbuild": "npm install && npm install --prefix frontend/twitter-clone && npm run build --prefix frontend/twitter-clone"
+    "heroku-postbuild": "npm install --only=dev --no-shrinkwrap && npm install --prefix frontend/twitter-clone && npm run build --prefix frontend/twitter-clone"
   },
   "keywords": [],
   "author": "",
