@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node_modules/.bin/ts-node server/index.ts",
-    "start:dev": "nodemon --exec node_modules/.bin/ts-node server/index.ts",
+    "start": "node_modules/.bin/ts-node backend/index.ts",
+    "start:dev": "nodemon --exec node_modules/.bin/ts-node backend/index.ts",
     "heroku-postbuild": "npm install && npm install --only=dev --no-shrinkwrap && npm install --prefix frontend/twitter-clone && npm run build --prefix frontend/twitter-clone"
   },
   "keywords": [],
