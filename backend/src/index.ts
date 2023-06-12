@@ -23,6 +23,16 @@ try {
 	console.log(err);
 }
 
+app.use(
+	express.static(path.resolve(__dirname, "../../frontend/twitter-clone/build/"))
+);
+
+app.get("*", (request, response) => {
+	response.sendFile(
+		path.resolve(__dirname, "../../frontend/twitter-clone/build/", "index.html")
+	);
+});
+
 app.listen(PORT, () => {
 	console.log(`Server is running on port ${PORT}`);
 });
