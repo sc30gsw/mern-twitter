@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const BASE_URL = process.env.REACT_APP_BASE_URL as string;
+// const BASE_URL = process.env.REACT_APP_BASE_URL as string;
+const BASE_URL = "https://twitter-heroku.herokuapp.com/api";
 
 const getToken = () => localStorage.getItem("token");
 
