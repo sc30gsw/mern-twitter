@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node dist/index.js",
+    "start": "ts-node src/index.ts",
+    "start:prod": "node dist/index.js",
     "build": "tsc",
-    "heroku-postbuild": "npm run build && cd frontend/twitter-clone && npm install && npm run build"
+    "heroku-postbuild": "npm run build && cd frontend/twitter-clone && npm install && npm run build",
   },
   "keywords": [],
   "author": "",
