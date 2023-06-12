@@ -7,7 +7,7 @@ const cors = require("cors");
 const app = express();
 
 app.use(cors({ origin: "*" }));
-const PORT = 4000;
+const PORT = process.env.PORT || 4000;
 const url = process.env.MONGODB_URL as string;
 app.use(express.json());
 
